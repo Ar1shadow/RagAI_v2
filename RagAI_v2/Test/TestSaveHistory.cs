@@ -4,16 +4,15 @@ using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagAI_v2.Extensions;
-
-
+using RagAI_v2.Prompts;
 using Spectre.Console;
 
 namespace RagAI_v2.Test;
 
-public class TestSaveHistory
+public static class TestSaveHistory
 {
 #pragma warning disable SKEXP0070
-    public async Task Run()
+    public static async Task Run()
     {
         // Ajouter le fichier de Config à environnement
         var config = new ConfigurationBuilder()
@@ -49,7 +48,7 @@ public class TestSaveHistory
             .WithOllamaTextEmbeddingGeneration(embedding)
             .WithSearchClientConfig(new SearchClientConfig()
             {
-                MaxMatchesCount = 10,
+                MaxMatchesCount = 3,
                 AnswerTokens = 500,
                 Temperature = 0.2,
                 TopP = 0.3
@@ -59,20 +58,22 @@ public class TestSaveHistory
 // Obtenir le ChatService de SK
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
         var history = new ChatHistory();
-        history.AddSystemMessage(
-            "You are a helpful assistant.Always answer in French and willing to give a concise answer.");
+        history.AddSystemMessage(CustomTemplate.Rag.Prompt);
 
 // Commencer Chat Loop
         var userInput = string.Empty;
-        IOmanager.WriteSystem("Welcome to RagAI v2.0"); // TODO:ajouter Spectre Write titre
+        IOmanager.WriteTitre("Welcome to RagAI v2.0");
         while (userInput != "exit")
         {
             IOmanager.WriteUser();
             userInput = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(userInput)) continue;
             if (userInput == "exit") break;
-            history.AddUserMessage(userInput);
-
+            
+            var search = await memory.SearchAsync(userInput);
+            var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
+            history.AddUserMessage(prompt);
+            
             IOmanager.WriteAssistant();
             var response = new StringBuilder();
             await foreach (var text in
@@ -83,8 +84,6 @@ public class TestSaveHistory
             }
             history.AddAssistantMessage(response.ToString());
         }
-
-        Directory.CreateDirectory(config["ChatHistory:Directory"]);
         history.SaveHistory(config["ChatHistory:Directory"]);
     }
 }

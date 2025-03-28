@@ -8,10 +8,10 @@ using RagAI_v2.Extensions;
 
 namespace RagAI_v2.Test;
 
-public class TestLoadHistory
+public static class TestLoadHistory
 {
 #pragma warning disable SKEXP0070
-    public async Task Run()
+    public static async Task Run()
     {
         // Ajouter le fichier de Config à environnement
         var config = new ConfigurationBuilder()
@@ -42,7 +42,7 @@ public class TestLoadHistory
             .WithOllamaTextEmbeddingGeneration(embedding)
             .WithSearchClientConfig(new SearchClientConfig()
             {
-                MaxMatchesCount = 10,
+                MaxMatchesCount = 3,
                 AnswerTokens = 500,
                 Temperature = 0.2,
                 TopP = 0.3
