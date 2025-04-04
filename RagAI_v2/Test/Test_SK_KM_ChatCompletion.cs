@@ -63,49 +63,9 @@ public static class Test_SK_KM_ChatCompletion
             modelId : model,
             endpoint : new Uri(config["ChatModel:endpoint"]));
         var kernel = kernelBuilder.Build();
-        
-        // # region Utiliser AskAsync
-        // var context = new RequestContext();
-        //  
-        // // set template
-        // context.SetArg(Constants.CustomContext.Rag.FactTemplate, CustomTemplate.Rag.FactTemplate);
-        // context.SetArg(Constants.CustomContext.Rag.Prompt,CustomTemplate.Rag.AnswerPrompt);
-        // // supprimer les anciens indexes
-        // foreach (var index  in await memory.ListIndexesAsync())
-        // {
-        //     IOmanager.WriteSystem($" --Index :{index.Name} supprimé");
-        //     await memory.DeleteIndexAsync(index: index.Name);
-        // }
-        //
-        // var sw = Stopwatch.StartNew();
-        // // charger document 
-        // if (!await memory.IsDocumentReadyAsync("doc1"))
-        // {
-        //     var id = await memory.ImportDocumentAsync(new Document("doc1")
-        //         .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file7-submarine.html")
-        //         .AddTag("type","docx"));
-        //     IOmanager.WriteSystem($" --Document ID :{id} importé à {sw.Elapsed} s");
-        // }else
-        //     IOmanager.WriteSystem($" --Document ID :doc1 déjà importé");
-        // if (!await memory.IsDocumentReadyAsync("doc3"))
-        // {
-        //     sw.Restart();
-        //     var id_3 = await memory.ImportDocumentAsync(new Document("doc3")
-        //         .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file5-NASA-news.pdf")
-        //         .AddTag("type","news"));
-        //     IOmanager.WriteSystem($" --Document ID :{id_3} importé à {sw.Elapsed} s");
-        // }else
-        //     IOmanager.WriteSystem($" --Document ID :doc3 déjà importé");
-        //
-        // // Tester les sorties
-        // var qustion = "what is NASA's projet";
-        // var answerStreaming =  memory.AskStreamingAsync(qustion,context: context,options: new SearchOptions() {Stream = true});
-        // IOmanager.WriteLineUser(qustion);
-        // await foreach (var text in answerStreaming)
-        // {
-        //     IOmanager.WriteAssistant(text.Result);
-        // }
-        // #endregion
+
+        memory.Orchestrator.RunPipelineAsync();
+       
         
 
         #region Utiliser SearchAsync
@@ -149,7 +109,6 @@ public static class Test_SK_KM_ChatCompletion
             if (string.IsNullOrWhiteSpace(userInput)) continue;
             if (userInput == "exit") break;
             
-
             var search = await memory.SearchAsync(userInput);
             var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
             history.AddUserMessage(prompt);

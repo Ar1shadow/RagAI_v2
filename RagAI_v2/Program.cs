@@ -1,4 +1,4 @@
-﻿#define module_5
+﻿#define module_6
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -44,3 +44,6 @@ await TestLoadHistory.Run();
 #if module_5
 await TestSaveHistory.Run();
 #endif
+
+AnsiConsole.Markup(" **RagAI_v2** \n");
+AnsiConsole.WriteLine(" **RagAI_v2** \n");

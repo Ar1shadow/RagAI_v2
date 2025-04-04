@@ -101,7 +101,7 @@ public static class IOmanager
     public static string? WriteInput(string? prompt)
     {
         Console.ForegroundColor = SystemColor;
-        AnsiConsole.Write(prompt);
+        Console.Write(prompt);
         return Console.ReadLine();
     }
     
