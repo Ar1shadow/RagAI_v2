@@ -5,14 +5,15 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagAI_v2;
 using RagAI_v2.Extensions;
+using RagAI_v2.Prompts;
 
 namespace RagAI_v2.Test;
 
 #pragma warning disable SKEXP0070
 
-public class Test_IO
+public static class Test_IO
 {
-     public async Task Run()
+     public static async Task Run()
     {
         // Ajouter le fichier de Config à environnement
         var config = new ConfigurationBuilder()
@@ -41,7 +42,7 @@ public class Test_IO
 
 // Obtenir le ChatService de SK
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var history = new ChatHistory();
+        var history = new ChatHistory(CustomTemplate.Rag.Prompt);
 
 // Commencer Chat Loop
         var userInput = string.Empty;

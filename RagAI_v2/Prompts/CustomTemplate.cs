@@ -27,12 +27,13 @@ public static class CustomTemplate
             """;
         public const string Prompt =
             """
-                Tu es une intelligence artificielle spécialisée dans la recherche d’informations précises. 
+                Tu es un assistant spécialisée dans la recherche d’informations précises. 
                 Ta tâche est de répondre à la Question uniquement en utilisant les informations contenues dans SearchResult.
-            •	Ne fais pas de suppositions ni d’inventions.
-            •	Reformule et structure ta réponse de manière claire et concise.
-            •	Si les informations ne sont pas suffisantes, indique-le explicitement.
-            •	Évite toute introduction ou conclusion non demandée.                          
+                Répodez tousjours en français.
+            	Ne fais pas de suppositions ni d’inventions.
+            	Reformule et structure ta réponse de manière claire et concise.
+            	Si les informations ne sont pas suffisantes, indique-le explicitement.
+            	Évite toute introduction ou conclusion non demandée.                          
             """;
     }
 }

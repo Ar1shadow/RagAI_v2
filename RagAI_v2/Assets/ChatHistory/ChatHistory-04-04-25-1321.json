@@ -1,0 +1,41 @@
+[
+  {
+    "Role": {
+      "Label": "system"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "    Tu es un assistant sp\u00E9cialis\u00E9e dans la recherche d\u2019informations pr\u00E9cises. \r\n    Ta t\u00E2che est de r\u00E9pondre \u00E0 la Question uniquement en utilisant les informations contenues dans SearchResult.\r\n    R\u00E9podez tousjours en fran\u00E7ais.\r\n\tNe fais pas de suppositions ni d\u2019inventions.\r\n\tReformule et structure ta r\u00E9ponse de mani\u00E8re claire et concise.\r\n\tSi les informations ne sont pas suffisantes, indique-le explicitement.\r\n\t\u00C9vite toute introduction ou conclusion non demand\u00E9e.                          "
+      }
+    ]
+  },
+  {
+    "Role": {
+      "Label": "user"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "User Question: carbon\u0027s rank in the earth curst\r\n\r\nSearch Results:\r\nSource Name: file1-Wikipedia-Carbon.txt\r\nPartition : 1s22s22p2, of which the four outer electrons are valence electrons. Its first four ionisation energies, 1086.5, 2352.6, 4620.5 and 6222.7 kJ/mol, are much higher than those of the heavier group-14 elements. The electronegativity of carbon is 2.5, significantly higher than the heavier group-14 elements (1.8\u20131.9), but close to most of the nearby nonmetals, as well as some of the second- and third-row transition metals. Carbon\u0027s covalent radii are normally taken as 77.2 pm (C\u2212C), 66.7 pm (C=C) and 60.3 pm (C\u2261\u2261C), although these may vary depending on coordination number and what the carbon is bonded to. In general, covalent radius decreases with lower coordination number and higher bond order.[24] Carbon-based compounds form the basis of all known life on Earth, and the carbon-nitrogen-oxygen cycle provides a small portion of the energy produced by the Sun, and most of the energy in larger stars (e.g. Sirius). Although it forms an extraordinary variety of compounds, most forms of carbon are comparatively unreactive under normal conditions. At standard temperature and pressure, it resists all but the strongest oxidizers. It does not react with sulfuric acid, hydrochloric acid, chlorine or any alkalis. At elevated temperatures, carbon reacts with oxygen to form carbon oxides and will rob oxygen from metal oxides to leave the elemental metal. This exothermic reaction is used in the iron and steel industry to smelt iron and to control the carbon content of steel: Fe 3O 4 \u002B 4 C(s) \u002B 2 O 2 \u2192 3 Fe(s) \u002B 4 CO 2(g). Carbon reacts with sulfur to form carbon disulfide, and it reacts with steam in the coal-gas reaction used in coal gasification: C(s) \u002B H2O(g) \u2192 CO(g) \u002B H2(g). Carbon combines with some metals at high temperatures to form metallic carbides, such as the iron carbide cementite in steel and tungsten carbide, widely used as an abrasive and for making hard tips for cutting tools.\r\n\r\n"
+      }
+    ]
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": []
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Le rang de l\u0027azote dans la cro\u00FBte terrestre n\u0027est pas pr\u00E9cis\u00E9. Cependant, des informations sont fournies sur les propri\u00E9t\u00E9s et le comportement du carbone :\n\n- Le carbone a une \u00E9lectronegativit\u00E9 de 2,5, ce qui est plus \u00E9lev\u00E9 que les \u00E9l\u00E9ments du groupe 14 lourds.\n- Ses covalents radii varient entre 60.3 pm (C\u2261C) et 77.2 pm (C-C).\n- Le carbone forme une grande vari\u00E9t\u00E9 de compos\u00E9s, mais il est g\u00E9n\u00E9ralement r\u00E9actif sous des conditions normales.\n- \u00C0 haute temp\u00E9rature, le carbone r\u00E9agit avec l\u0027oxyg\u00E8ne pour former des carbonates et s\u0027\u00E9puise des oxydes m\u00E9talliques.\n- Le carbone combine avec certains m\u00E9taux \u00E0 haute temp\u00E9rature pour former des carbures m\u00E9tallurgiques, comme le cementite en acier et le tungst\u00E9n carbure."
+      }
+    ]
+  }
+]

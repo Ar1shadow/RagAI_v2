@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.KernelMemory;
+using System.Collections.Concurrent;
 
 public static class SearchResultProcessor
 {  
@@ -47,8 +48,14 @@ public static class SearchResultProcessor
 
                 if (citation.Partitions != null && citation.Partitions.Any())
                 {
-                    var cleanedText = CleanText(citation.Partitions.First().Text);
-                    promptBuilder.AppendLine($"Partition : {cleanedText}");
+                    var cleanedText = new StringBuilder();
+                    foreach (var partition in citation.Partitions)
+                    {
+                        cleanedText.Append(CleanText(partition.Text));
+
+                    }
+                    
+                    promptBuilder.AppendLine($"Partition : {cleanedText.ToString()}");
                     promptBuilder.AppendLine();
                 }
             }

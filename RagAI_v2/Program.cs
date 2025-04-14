@@ -1,4 +1,4 @@
-﻿#define module_5
+﻿#define module_6
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -21,7 +21,13 @@ var config = new ConfigurationBuilder()
     .UpdateChatModelConfig("appsettings.json")
     .Build();
 
+var httpClient = new HttpClient
+{
+    Timeout = TimeSpan.FromMinutes(5) // Increase the timeout to 5 minutes
+};
 
+CancellationTokenSource cts = new CancellationTokenSource();
+cts.CancelAfter(TimeSpan.FromMinutes(5));
 
 #if module_1
 #pragma warning disable KMEXP00
@@ -34,7 +40,7 @@ await TestDB.Run();
 #endif
 
 #if module_3
-await Test_SK_KM_ChatCompletion.Run();
+await Test_SK_KM_ChatCompletion.Run(cts.Token);
 #endif
 
 #if module_4
@@ -43,4 +49,16 @@ await TestLoadHistory.Run();
 
 #if module_5
 await TestSaveHistory.Run();
+#endif
+
+#if module_6
+await Test_IO.Run();
+#endif
+
+#if module_7
+await TestDeleteDB.Run();
+#endif
+
+#if module_8
+await TestSearch.Run();
 #endif

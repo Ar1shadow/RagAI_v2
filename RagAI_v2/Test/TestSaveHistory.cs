@@ -48,7 +48,7 @@ public static class TestSaveHistory
             .WithOllamaTextEmbeddingGeneration(embedding)
             .WithSearchClientConfig(new SearchClientConfig()
             {
-                MaxMatchesCount = 3,
+                MaxMatchesCount = 2,
                 AnswerTokens = 500,
                 Temperature = 0.2,
                 TopP = 0.3
