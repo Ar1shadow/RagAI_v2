@@ -2,73 +2,68 @@ using RagAI_v2.Interface;
 using Spectre.Console;
 namespace RagAI_v2;
 
-public static class IOmanager
+public static class ConsoleIO
 {
 
-    private static readonly System.ConsoleColor UserColor = ConsoleColor.Green;
-    private static readonly System.ConsoleColor AssistantColor = ConsoleColor.Yellow;
-    private static readonly System.ConsoleColor SystemColor = ConsoleColor.DarkGray;
-    
     /// <summary>
     /// Write a assistant message to console
     /// </summary>
     /// <param name="text"></param>
     public static void WriteAssistant(object? text)
     {
-        Console.ForegroundColor = AssistantColor;
-        Console.Write(text);
+        AnsiConsole.Markup($"[yellow]{Markup.Escape(text?.ToString() ?? "")}[/]");
     }
+    
     /// <summary>
     /// Write a assistant prompt to console
     /// </summary>
     public static void WriteAssistant()
     {
-        Console.ForegroundColor = AssistantColor;
-        Console.Write("\nAssistant > ");
+        AnsiConsole.Markup("\n[yellow]Assistant > [/]");
     }
+    
     /// <summary>
     /// Write a assistant message to console and a new line
     /// </summary>
     /// <param name="text"></param>
     public static void WriteLineAssistant(object? text)
     {
-        Console.ForegroundColor = AssistantColor;
-        Console.WriteLine(text);
+        AnsiConsole.MarkupLine($"[yellow]{Markup.Escape(text?.ToString() ?? "")}[/]");
     }
+    
     /// <summary>
     /// Write a system message to console
     /// </summary>
     /// <param name="text"></param>
     public static void WriteSystem(object? text)
     {
-        Console.ForegroundColor = SystemColor;
-        Console.WriteLine(text);
+        AnsiConsole.MarkupLine($"[grey]{Markup.Escape(text?.ToString() ?? "")}[/]");
     }
+    
     /// <summary>
     /// Write a user input prompt
     /// </summary>
     public static void WriteUser()
     {
-        Console.ForegroundColor = UserColor;
-        Console.Write("\nUser > ");
+        AnsiConsole.Markup("\n[green]User > [/]");
     }
+    
     /// <summary>
     /// Write a user input to the console
     /// </summary>
     /// <param name="text"></param>
     public static void WriteUser(object? text)
     {
-        Console.ForegroundColor = UserColor;
-        Console.Write(text);
+        AnsiConsole.Markup($"[green]{Markup.Escape(text?.ToString() ?? "")}[/]");
     }
+    
     /// <summary>
     /// Write a user input to the console and a new line
     /// </summary>
     /// <param name="text"></param>
     public static void WriteLineUser(object? text)
     {
-        Console.ForegroundColor = UserColor;
-        Console.WriteLine(text);
+        AnsiConsole.MarkupLine($"[green]{Markup.Escape(text?.ToString() ?? "")}[/]");
     }
 
     /// <summary>
@@ -84,6 +79,7 @@ public static class IOmanager
                 .Title(title)
                 .AddChoices(choices));
     }
+    
     /// <summary>
     /// Write a title to the console
     /// </summary>
@@ -93,16 +89,28 @@ public static class IOmanager
         title ??= "#####";
         AnsiConsole.Write(new Rule(title));
     }
+    
     /// <summary>
     /// Write a prompt to the console and return the input
     /// </summary>
     /// <param name="prompt"></param>
     /// <returns></returns>
-    public static string? WriteInput(string? prompt)
+
+    public static string Ask(string prompt) =>
+        AnsiConsole.Prompt(new TextPrompt<string>($"[bold grey]{Markup.Escape(prompt)}[/]"));
+    
+    public static void Warning(string exception) =>
+        AnsiConsole.MarkupLine("[bold red]WARNING:[/] " + Markup.Escape(exception));
+    public static void Error(string exception) =>
+        AnsiConsole.MarkupLine("[bold blue]WARNING:[/] " + Markup.Escape(exception));
+    
+    public static bool Confirm(string prompt, bool defaultValue = true)
     {
-        Console.ForegroundColor = SystemColor;
-        Console.Write(prompt);
-        return Console.ReadLine();
+        return AnsiConsole.Confirm($"[bold grey]{Markup.Escape(prompt)}[/]", defaultValue);
     }
+    
+    
+    public static void ShowProgress(Action<ProgressContext> action) =>
+        AnsiConsole.Progress().Start(action);
     
 }

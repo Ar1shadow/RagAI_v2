@@ -1,30 +1,24 @@
-
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
-using Microsoft.SemanticKernel.Connectors.Ollama;
 using RagAI_v2.Extensions;
 using RagAI_v2.Prompts;
+using RagAI_v2.Utils;
+using RagAI_v2.Cmd;
 using Microsoft.KernelMemory.Configuration;
 
 namespace RagAI_v2.Test;
-// Test 1 : Modification de Prompt
-// Méthode 1 → Context.setArg et AskAsync     <Non, temp de generation>
-// Méthode 2 → SearchAsync et Custom fonction à processe les resultats <complete>
-public static class Test_SK_KM_ChatCompletion
+
+public class TestCommand
 {
-#pragma warning disable SKEXP0070
-    public static async Task Run(CancellationToken token)
+    #pragma warning disable SKEXP0070
+    public static async Task Run()
     {
-        CancellationTokenSource cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromMinutes(100));
-
-
+        
         // Ajouter le fichier de Config à environnement
         var config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
@@ -49,7 +43,7 @@ public static class Test_SK_KM_ChatCompletion
             TableNamePrefix = "test-"
         };
 
-        // Etablir kernel memory
+        // Etablir KM
         var memory = new KernelMemoryBuilder()
             .WithOllamaTextGeneration(model)
             .WithOllamaTextEmbeddingGeneration(embedding)
@@ -68,15 +62,16 @@ public static class Test_SK_KM_ChatCompletion
                 OverlappingTokens = 200,
             })
             .Build<MemoryServerless>();
-
+        
+        // SK
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddOllamaChatCompletion(
+        kernelBuilder.AddOllamaChatCompletion(
             modelId: model,
             endpoint: new Uri(config["ChatModel:endpoint"]!));
-        
         var kernel = kernelBuilder.Build();
-      
-
+        
+        
+        
         #region Utiliser SearchAsync
 
         var sw = Stopwatch.StartNew(); 
@@ -84,6 +79,8 @@ public static class Test_SK_KM_ChatCompletion
         string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"])
             .Where(file=> !Path.GetFileName(file).StartsWith("."))
             .ToArray();
+        
+        
         for(int i = 0; i < files.Length; i++)
         {
             var file = files[i];
@@ -109,37 +106,49 @@ public static class Test_SK_KM_ChatCompletion
         // Obtenir le ChatService de SK
         
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var history = new ChatHistory(CustomTemplate.Rag.Prompt);
+        var history = new ChatHistory(CustomTemplate.Chat.Prompt);
+        //Command
+        var router = new CommandRouter(config, history, memory, chatService);
         //history.LoadHistory(config["ChatHistoryReducer:Directory"]);
        
         // Commencer Chat Loop
         var userInput = string.Empty;
         ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
-        while (userInput != "exit")
+        ConsoleIO.WriteUser();
+        while (true)
         {
-            ConsoleIO.WriteUser();
+           
+            
             userInput = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(userInput)) continue;
+            if (Outils.IsCommand(userInput))
+            {
+                await router.HandleCommand(userInput);
+                ConsoleIO.WriteUser();
+                continue;
+            }
             
-            if (userInput == "exit") break;
             
-            var search = await memory.SearchAsync(userInput);
-            var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
-            ConsoleIO.WriteSystem(prompt);
-            history.AddUserMessage(prompt);
+            //if (userInput == "exit") break;
+            
+            // var search = await memory.SearchAsync(userInput);
+            // var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
+            // ConsoleIO.WriteSystem(prompt);
+            // history.AddUserMessage(prompt);
             ConsoleIO.WriteAssistant();
             var response = new StringBuilder();
-
+            history.AddUserMessage(userInput);
             await foreach (var text in
-                           chatService.GetStreamingChatMessageContentsAsync(history,cancellationToken: cts.Token))
+                           chatService.GetStreamingChatMessageContentsAsync(history))
             {
                 ConsoleIO.WriteAssistant(text);
                 response.Append(text);
             }
             history.AddAssistantMessage(response.ToString());
+            ConsoleIO.WriteUser();
         }
         
-        history.SaveHistory(config["ChatHistoryReducer:Directory"]);
+        
         #endregion
 
     }
