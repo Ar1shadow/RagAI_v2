@@ -63,8 +63,6 @@ public static class Test_SK_KM_ChatCompletion
             modelId : model,
             endpoint : new Uri(config["ChatModel:endpoint"]));
         var kernel = kernelBuilder.Build();
-
-        memory.Orchestrator.RunPipelineAsync();
        
         
 
