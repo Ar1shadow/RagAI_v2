@@ -21,12 +21,12 @@ public static class TestLoadHistory
             .Build();
 
 // Choix du Chat modèle
-        var model = IOmanager.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
+        var model = ConsoleIO.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 
 // Choix de l'embedding modèle
-        var embedding = IOmanager.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
+        var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 // établir Semantic Kernel 
@@ -52,30 +52,30 @@ public static class TestLoadHistory
 // Obtenir le ChatService de SK
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
         var history = new ChatHistory();
-        history.LoadHistory(config["ChatHistory:Directory"]);
+        history.LoadHistory(config["ChatHistoryReducer:Directory"]);
 
 // Commencer Chat Loop
         var userInput = string.Empty;
-        IOmanager.WriteTitre("Welcome to RagAI v2.0");
+        ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
         while (userInput != "exit")
         {
-            IOmanager.WriteUser();
+            ConsoleIO.WriteUser();
             userInput = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(userInput)) continue;
             if (userInput == "exit") break;
             history.AddUserMessage(userInput);
 
-            IOmanager.WriteAssistant();
+            ConsoleIO.WriteAssistant();
             var response = new StringBuilder();
             await foreach (var text in
                            chatService.GetStreamingChatMessageContentsAsync(history))
             {
-                IOmanager.WriteAssistant(text);
+                ConsoleIO.WriteAssistant(text);
                 response.Append(text);
             }
             history.AddAssistantMessage(response.ToString());
         }
 
-        history.SaveHistory(config["ChatHistory:Directory"]);
+        history.SaveHistory(config["ChatHistoryReducer:Directory"]);
     }
 }

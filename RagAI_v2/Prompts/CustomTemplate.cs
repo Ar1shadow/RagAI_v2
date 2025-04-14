@@ -17,22 +17,34 @@ public static class CustomTemplate
                 Output:                             
             """;
         
-        public const string KMAnswerPrompt =
+        public static readonly string QueryRefinementPrompt = 
             """
-                {{$facts}}
-                ================
-                Given the facts above,if facts are not vide,answer the user's quesiton, the answer maybe inevident, parse
-                the key words and provide a clear and rational answer, include source.IF you don't find answer, just reply{{$notFound}}
-                question:{{$input}}
+            Tu es un assistant de recherche documentaire.
+            Ta tâche est de reformuler la question de l'utilisateur pour optimiser la recherche sémantique.
+            Garde l’intention d’origine. Sois plus direct, plus clair, sans politesse ni reformulation inutile.
+
+            Question : "{{question}}"
+            Requête optimisée :
             """;
+        
         public const string Prompt =
             """
-                Tu es une intelligence artificielle spécialisée dans la recherche d’informations précises. 
-                Ta tâche est de répondre à la Question uniquement en utilisant les informations contenues dans SearchResult.
-            •	Ne fais pas de suppositions ni d’inventions.
-            •	Reformule et structure ta réponse de manière claire et concise.
-            •	Si les informations ne sont pas suffisantes, indique-le explicitement.
-            •	Évite toute introduction ou conclusion non demandée.                          
+            Tu dois répondre à la question ci-dessous uniquement en utilisant les résultats de recherche fournis.
+            
+            Règles :
+            - Réponds en français.
+            - Utilise les informations telles qu'elles sont.
+            - Sois précis, clair et concis.
+            - N'invente rien. Si tu ne sais pas, dis-le.
+            - Aucune introduction ni conclusion.
             """;
     }
+
+    public static class Chat
+    {
+        public const string Prompt ="Répodez tousjours en français, sauf que le user demande";
+            
+       
+    }
+    
 }

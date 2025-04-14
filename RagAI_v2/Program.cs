@@ -1,4 +1,4 @@
-﻿#define module_6
+﻿#define module_9
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -8,6 +8,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using RagAI_v2;
 using RagAI_v2.Test;
 using RagAI_v2.Extensions;
 using Spectre.Console;
@@ -22,7 +23,6 @@ var config = new ConfigurationBuilder()
     .Build();
 
 
-
 #if module_1
 #pragma warning disable KMEXP00
 var reader = new EmbeddedPromptProvider();
@@ -34,7 +34,7 @@ await TestDB.Run();
 #endif
 
 #if module_3
-await Test_SK_KM_ChatCompletion.Run();
+await Test_SK_KM_ChatCompletion.Run(cts.Token);
 #endif
 
 #if module_4
@@ -45,5 +45,18 @@ await TestLoadHistory.Run();
 await TestSaveHistory.Run();
 #endif
 
-AnsiConsole.Markup(" **RagAI_v2** \n");
-AnsiConsole.WriteLine(" **RagAI_v2** \n");
+#if module_6
+await Test_IO.Run();
+#endif
+
+#if module_7
+await TestDeleteDB.Run();
+#endif
+
+#if module_8
+await TestSearch.Run();
+#endif
+
+#if module_9
+await TestCommand.Run();
+#endif

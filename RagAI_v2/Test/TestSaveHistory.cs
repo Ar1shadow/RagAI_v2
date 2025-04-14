@@ -22,14 +22,14 @@ public static class TestSaveHistory
             .Build();
 
 // Choix du Chat modèle
-//TODO:integrer dans IOmanager
+//TODO:integrer dans ConsoleIO
         var model = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Choisir un [green]Chat Modèle[/] : ")
                 .AddChoices(config.GetSection("ChatModel:modelId").Get<List<string>>()!));
 
 // Choix de l'embedding modèle
-//TODO:integrer dans IOmanager
+//TODO:integrer dans ConsoleIO
         var embedding = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Choisir un[green] Embedding modèle[/] : ")
@@ -48,7 +48,7 @@ public static class TestSaveHistory
             .WithOllamaTextEmbeddingGeneration(embedding)
             .WithSearchClientConfig(new SearchClientConfig()
             {
-                MaxMatchesCount = 3,
+                MaxMatchesCount = 2,
                 AnswerTokens = 500,
                 Temperature = 0.2,
                 TopP = 0.3
@@ -62,10 +62,10 @@ public static class TestSaveHistory
 
 // Commencer Chat Loop
         var userInput = string.Empty;
-        IOmanager.WriteTitre("Welcome to RagAI v2.0");
+        ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
         while (userInput != "exit")
         {
-            IOmanager.WriteUser();
+            ConsoleIO.WriteUser();
             userInput = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(userInput)) continue;
             if (userInput == "exit") break;
@@ -74,16 +74,16 @@ public static class TestSaveHistory
             var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
             history.AddUserMessage(prompt);
             
-            IOmanager.WriteAssistant();
+            ConsoleIO.WriteAssistant();
             var response = new StringBuilder();
             await foreach (var text in
                            chatService.GetStreamingChatMessageContentsAsync(history))
             {
-                IOmanager.WriteAssistant(text);
+                ConsoleIO.WriteAssistant(text);
                 response.Append(text);
             }
             history.AddAssistantMessage(response.ToString());
         }
-        history.SaveHistory(config["ChatHistory:Directory"]);
+        history.SaveHistory(config["ChatHistoryReducer:Directory"]);
     }
 }

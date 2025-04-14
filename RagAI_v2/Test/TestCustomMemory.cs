@@ -29,14 +29,14 @@ public class TestCustomMemory
             .UpdateChatModelConfig("appsettings.json")
             .Build();
 
-        IOmanager.WriteTitre("Welcome to RagAI v2.0");
+        ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
 // Choix du Chat modèle
-        var model = IOmanager.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
+        var model = ConsoleIO.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 
 // Choix de l'embedding modèle
-        var embedding = IOmanager.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
+        var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 // établir Semantic Kernel 

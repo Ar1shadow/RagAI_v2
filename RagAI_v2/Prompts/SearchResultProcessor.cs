@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.KernelMemory;
+using System.Collections.Concurrent;
 
 public static class SearchResultProcessor
 {  
@@ -28,29 +29,31 @@ public static class SearchResultProcessor
             throw new ArgumentException("User question cannot be null or whitespace.", nameof(userQuestion));
         }
 
-        var promptBuilder = new StringBuilder();
-
-        // Add user question to the prompt
-        promptBuilder.AppendLine($"User Question: {userQuestion}");
+        var promptBuilder = new StringBuilder(CustomTemplate.Rag.Prompt);
+        promptBuilder.AppendLine();
+        promptBuilder.AppendLine("[QUESTION]");
+        promptBuilder.AppendLine(userQuestion);
         promptBuilder.AppendLine();
 
         // Process each citation and partition
-        if (searchResult.Results != null && searchResult.Results.Any())
+        if (searchResult.Results.Count != 0)
         {
-            promptBuilder.AppendLine("Search Results:");
-            //promptBuilder.AppendLine();
-
+            promptBuilder.AppendLine("[SEARCH RESULTS]");
             foreach (var citation in searchResult.Results)
             {
-                promptBuilder.AppendLine($"Source Name: {citation.SourceName}");
-                //promptBuilder.AppendLine();
-
-                if (citation.Partitions != null && citation.Partitions.Any())
+                promptBuilder.AppendLine($"Source: {citation.SourceName}");
+                if (citation.Partitions.Count != 0)
                 {
-                    var cleanedText = CleanText(citation.Partitions.First().Text);
-                    promptBuilder.AppendLine($"Partition : {cleanedText}");
-                    promptBuilder.AppendLine();
+                    foreach (var partition in citation.Partitions)
+                    {
+                        var cleaned = CleanText(partition.Text);
+                        if (!string.IsNullOrWhiteSpace(cleaned))
+                        {
+                            promptBuilder.AppendLine($"—— {cleaned}");
+                        }
+                    }
                 }
+                promptBuilder.AppendLine();
             }
         }
         else
@@ -73,11 +76,33 @@ public static class SearchResultProcessor
         }
 
         // Split text into lines, remove empty lines, and trim each line
-        var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(line => line.Trim())
-                        .Where(line => !string.IsNullOrWhiteSpace(line));
+        var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None)
+                        .Select(line => line.Trim());
 
-        return string.Join(" ", lines);
+        var paragraphs = new List<string>();
+        var currentParagraph = new List<string>();
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                if (currentParagraph.Any())
+                {
+                    paragraphs.Add(string.Join(" ", currentParagraph));
+                    currentParagraph.Clear();
+                }
+            }
+            else
+            {
+                currentParagraph.Add(line);
+            }
+        }
+
+        if (currentParagraph.Any())
+        {
+            paragraphs.Add(string.Join(" ", currentParagraph));
+        }
+
+        return string.Join(Environment.NewLine, paragraphs);
     }
 }
-

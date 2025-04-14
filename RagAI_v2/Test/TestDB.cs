@@ -33,14 +33,14 @@ public static class TestDB
             .UpdateChatModelConfig("appsettings.json")
             .Build();
 
-        IOmanager.WriteTitre("Welcome to RagAI v2.0");
+        ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
 // Choix du Chat modèle
-        var model = IOmanager.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
+        var model = ConsoleIO.WriteSelection("Choisir un [green]Chat Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 
 // Choix de l'embedding modèle
-        var embedding = IOmanager.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
+        var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
 
@@ -68,7 +68,7 @@ public static class TestDB
                 OverlappingTokens = 200,
             })
             .Build<MemoryServerless>();
-        IOmanager.WriteSystem("Test commence");
+        ConsoleIO.WriteSystem("Test commence");
         
         
         // Tester l'importation de document avec Custom Pipeline
@@ -79,10 +79,10 @@ public static class TestDB
                 "/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file1-Wikipedia-Carbon.txt",
                 documentId:"doc1",
                 steps:CustomConstants.PipelineRagWithoutLocalFiles);
-            IOmanager.WriteSystem($" --Document ID :{id_1}");
-            IOmanager.WriteSystem($"Tâche se fait à {sw.Elapsed} s");
+            ConsoleIO.WriteSystem($" --Document ID :{id_1}");
+            ConsoleIO.WriteSystem($"Tâche se fait à {sw.Elapsed} s");
         }else
-            IOmanager.WriteSystem($" --Document ID :doc1 déjà importé");
+            ConsoleIO.WriteSystem($" --Document ID :doc1 déjà importé");
         
         
         // TODO: Tester l'importation d'image (OCR required)
@@ -91,7 +91,7 @@ public static class TestDB
         var id_2 = await memory.ImportDocumentAsync(
             "/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file6-ANWC-image.jpg",
             documentId:"img1");
-        IOmanager.WriteSystem($" --Document ID :{id_2} importé à {sw.Elapsed} s");
+        ConsoleIO.WriteSystem($" --Document ID :{id_2} importé à {sw.Elapsed} s");
         */
         
         //Tester l'importation de document avec tags
@@ -101,9 +101,9 @@ public static class TestDB
             var id_3 = await memory.ImportDocumentAsync(new Document("doc3")
                 .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file5-NASA-news.pdf")
                 .AddTag("type","news"));
-            IOmanager.WriteSystem($" --Document ID :{id_3} importé à {sw.Elapsed} s");
+            ConsoleIO.WriteSystem($" --Document ID :{id_3} importé à {sw.Elapsed} s");
         }else
-            IOmanager.WriteSystem($" --Document ID :doc3 déjà importé");
+            ConsoleIO.WriteSystem($" --Document ID :doc3 déjà importé");
         
         
         // Tester l'importation de document excel avec Index
@@ -113,9 +113,9 @@ public static class TestDB
             var id_4 = await memory.ImportDocumentAsync(new Document("doc4")
                 .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file8-data.xlsx")
                 .AddTag("type","excel"));
-            IOmanager.WriteSystem($" --Document ID :{id_4} importé à {sw.Elapsed} s");
+            ConsoleIO.WriteSystem($" --Document ID :{id_4} importé à {sw.Elapsed} s");
         }else
-            IOmanager.WriteSystem($" --Document ID :doc4 déjà importé");
+            ConsoleIO.WriteSystem($" --Document ID :doc4 déjà importé");
        
         // Tester l'importation de document excel avec json
         if (!await memory.IsDocumentReadyAsync("doc5"))
@@ -124,9 +124,9 @@ public static class TestDB
             var id_5 = await memory.ImportDocumentAsync(new Document("doc5")
                 .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file9-settings.json")
                 .AddTag("type","json"));
-            IOmanager.WriteSystem($" --Document ID :{id_5} importé à {sw.Elapsed} s");
+            ConsoleIO.WriteSystem($" --Document ID :{id_5} importé à {sw.Elapsed} s");
         }else
-            IOmanager.WriteSystem($" --Document ID :doc5 déjà importé");
+            ConsoleIO.WriteSystem($" --Document ID :doc5 déjà importé");
         
         
         if (!await memory.IsDocumentReadyAsync("doc6"))
@@ -135,55 +135,55 @@ public static class TestDB
             var id_6 = await memory.ImportDocumentAsync(new Document("doc6")
                 .AddFile("/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/file3-lorem-ipsum.docx")
                 .AddTag("type","docx"));
-            IOmanager.WriteSystem($" --Document ID :{id_6} importé à {sw.Elapsed} s");
+            ConsoleIO.WriteSystem($" --Document ID :{id_6} importé à {sw.Elapsed} s");
         }
        
         // Tester cherche avec filter
         var qustion = "which countries dont have code in this sheet";
         var Answer = await memory.AskAsync(qustion,index:"shadow",filter: MemoryFilters.ByDocument("doc4"));
-        IOmanager.WriteLineUser(qustion);
-        IOmanager.WriteLineAssistant($"Answer{Answer.Result}");
+        ConsoleIO.WriteLineUser(qustion);
+        ConsoleIO.WriteLineAssistant($"Answer{Answer.Result}");
         foreach (var source in Answer.RelevantSources)
         {
-            IOmanager.WriteLineAssistant($"- {source.SourceName} - {source.Link} [{source.Partitions.First().LastUpdate:d}]");
+            ConsoleIO.WriteLineAssistant($"- {source.SourceName} - {source.Link} [{source.Partitions.First().LastUpdate:d}]");
         }
         
         
         
         // Tester la streaming  Asking using KM
-        IOmanager.WriteSystem("Test Streaming");
-        IOmanager.WriteUser();
+        ConsoleIO.WriteSystem("Test Streaming");
+        ConsoleIO.WriteUser();
         var userInput = Console.ReadLine() ?? string.Empty;
         while (userInput is not "exit")
         {
-            IOmanager.WriteAssistant();
+            ConsoleIO.WriteAssistant();
             var answerStreaming = memory.AskStreamingAsync(userInput,
                 options: new SearchOptions() { Stream = true });
             List<Citation> sources = [];
             await foreach (var answer in answerStreaming)
             {
-                IOmanager.WriteAssistant(answer.Result);
+                ConsoleIO.WriteAssistant(answer.Result);
                 sources.AddRange(answer.RelevantSources);
             }
             Console.WriteLine();
             foreach (var source in sources)
             {
-                IOmanager.WriteLineAssistant($"- {source.SourceName} - {source.Link} [{source.Partitions.First().LastUpdate:d}]");
+                ConsoleIO.WriteLineAssistant($"- {source.SourceName} - {source.Link} [{source.Partitions.First().LastUpdate:d}]");
             }
-            IOmanager.WriteSystem("Relevant ressources:");
+            ConsoleIO.WriteSystem("Relevant ressources:");
             foreach (var source in sources)
             {
-                IOmanager.WriteLineUser($"----First : [{source.Partitions.First().Text}]=====");
+                ConsoleIO.WriteLineUser($"----First : [{source.Partitions.First().Text}]=====");
                 foreach (var partition in source.Partitions)
                 {
-                    IOmanager.WriteLineAssistant($"- [{partition.Text}]======\n");
+                    ConsoleIO.WriteLineAssistant($"- [{partition.Text}]======\n");
                 } 
             }
             
             
             
             
-            IOmanager.WriteUser();
+            ConsoleIO.WriteUser();
             userInput = Console.ReadLine() ?? string.Empty;
         }
 
