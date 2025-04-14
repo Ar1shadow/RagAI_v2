@@ -1,12 +1,9 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
-using Microsoft.KernelMemory.Handlers;
 using RagAI_v2.Extensions;
 
 namespace RagAI_v2.Test;

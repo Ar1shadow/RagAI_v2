@@ -121,7 +121,6 @@ public static class Test_SK_KM_ChatCompletion
             
             if (userInput == "exit") break;
             
-
             var search = await memory.SearchAsync(userInput);
             var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
             IOmanager.WriteSystem(prompt);

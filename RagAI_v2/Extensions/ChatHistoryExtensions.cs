@@ -49,7 +49,7 @@ public static class ChatHistoryExtensions
         }
     }
 
-    //TODO: Ajouter une option pour ne pas charger l'historique
+    //TODO: Ajouter une option pour ne pas charger l'historique <complet>
     //TODO: Ajouter une fonction de sortir le resume de l'ancienne conversation
     public static void LoadHistory(this ChatHistory history, string historyDirectory)
     {
