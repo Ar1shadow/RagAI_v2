@@ -277,10 +277,10 @@ public class CommandRouter
         // Enregistrer les commandes par défaut
         var commandList = new List<ICommand>
         {
-            new LoadCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
-            new SaveCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
+            new LoadCommand(history,config["ChatHistory:Directory"]??String.Empty),
+            new SaveCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new ExitCommand(),
-            new DeleteCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
+            new DeleteCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new QueryCommand(history:history,memory:memory,config:config, chatService:chatService)
             
         };
