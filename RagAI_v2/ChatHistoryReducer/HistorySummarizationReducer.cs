@@ -121,6 +121,7 @@ public class HistorySummarizationReducer : IChatHistoryReducer
             hasSystemMessage: systemMessage is not null);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
+        IEnumerable<ChatMessageContent>? functionCallsToPreserve = null;
 
         if (truncationIndex >= 0)
         {
@@ -130,6 +131,14 @@ public class HistorySummarizationReducer : IChatHistoryReducer
                     this.UseSingleSummary ? 0 : insertionPoint,
                     truncationIndex,
                     filter: (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
+            
+            // Sauvegarder（function call/result）potentiel dans la plage de résume
+            functionCallsToPreserve =
+                chatHistory
+                .Skip(insertionPoint)
+                .Take(truncationIndex - insertionPoint)
+                .Where(m => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+                .ToList();
 
             try
             {
@@ -167,12 +176,17 @@ public class HistorySummarizationReducer : IChatHistoryReducer
                     yield return chatHistory[index];
                 }
             }
-
+            
             if (summaryMessage is not null)
             {
                 yield return summaryMessage;
             }
 
+            foreach (var message in functionCallsToPreserve)
+            {
+                yield return message;
+            }
+                
             for (int index = truncationIndex; index < chatHistory.Count; ++index)
             {
                 yield return chatHistory[index];
