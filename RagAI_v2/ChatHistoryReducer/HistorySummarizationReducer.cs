@@ -182,11 +182,14 @@ public class HistorySummarizationReducer : IChatHistoryReducer
                 yield return summaryMessage;
             }
 
-            foreach (var message in functionCallsToPreserve)
+            if (functionCallsToPreserve is not null)
             {
-                yield return message;
+                foreach (var message in functionCallsToPreserve)
+                {
+                    yield return message;
+                }
             }
-                
+            
             for (int index = truncationIndex; index < chatHistory.Count; ++index)
             {
                 yield return chatHistory[index];

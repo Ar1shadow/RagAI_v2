@@ -10,6 +10,8 @@ using RagAI_v2.Prompts;
 using RagAI_v2.Utils;
 using RagAI_v2.Cmd;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using OllamaSharp;
 
 namespace RagAI_v2.Test;
 
@@ -65,9 +67,25 @@ public class TestCommand
         
         // SK
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOllamaChatCompletion(
-            modelId: model,
-            endpoint: new Uri(config["ChatModel:endpoint"]!));
+        kernelBuilder.Services.AddSingleton<HttpClient>(sp =>
+        {
+            var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromMinutes(20),
+                BaseAddress = new Uri("http://localhost:11434")
+            };
+            return client;
+        });
+        kernelBuilder.Services.AddSingleton<OllamaApiClient>(sp =>
+        {
+            var httpClient = sp.GetRequiredService<HttpClient>();
+            return new OllamaApiClient(httpClient, model!);
+        });
+
+    kernelBuilder.AddOllamaChatCompletion(
+            ollamaClient:null,
+            serviceId:null);
+
         var kernel = kernelBuilder.Build();
         
         

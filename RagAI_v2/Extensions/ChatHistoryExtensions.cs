@@ -15,10 +15,10 @@ public static class ChatHistoryExtensions
         // Assurer l'historique non null
         if (history == null)
         {
-            throw new ArgumentNullException(nameof(history), "ChatHistoryReducer cannot be null.");
+            throw new ArgumentNullException(nameof(history), "ChatHistory cannot be null.");
         }
-        
-        //  Assurer Assets/ChatHistoryReducer exists
+
+        //  Assurer Assets/ChatHistory exists
         string directoryPath = Path.GetDirectoryName(savePath) 
                                ?? throw new InvalidOperationException("Invalid directory path.");
         Directory.CreateDirectory(directoryPath); 
@@ -31,13 +31,14 @@ public static class ChatHistoryExtensions
                 Directory.CreateDirectory(savePath);
             }
             var timestamp = DateTime.Now.ToString("dd-MM-yy-HHmm");
-            var defaultFileName = $"ChatHistoryReducer-{timestamp}.json";
+            var defaultFileName = $"ChatHistory-{timestamp}.json";
             var customFileName = ConsoleIO.Confirm($"Voulez-vous utiliser un nom de fichier personnalisé [Défaut : {defaultFileName}, Espace pour utiliser le défaut] :?");
-            var fileName = customFileName? GetFileName() : defaultFileName;
+            var fileName = customFileName? GetFileName(savePath) : defaultFileName;
             
             savePath = Path.Combine(savePath, fileName);
-            // Serialize the ChatHistoryReducer to a text-based format.
-            // Assuming ChatHistoryReducer has a meaningful .ToString() implementation or a method to serialize.
+            var cleanedHistory = history.CleanHistory();
+            // Serialize the ChatHistory to a text-based format.
+            // Assuming ChatHistory has a meaningful .ToString() implementation or a method to serialize.
             var historyJson = JsonSerializer.Serialize(history,new JsonSerializerOptions {WriteIndented = true} );
             File.WriteAllText(savePath, historyJson);
             ConsoleIO.WriteSystem($"Sauvegarde de l'historique de conversation réussie dans {fileName}");
@@ -73,7 +74,9 @@ public static class ChatHistoryExtensions
         if (file is not option)
         {
             try
-            {
+            {   
+                file = file + ".json";
+                file = Path.Combine(historyDirectory, file);
                 var json = File.ReadAllText(file);
                 var historyDeserialize = JsonSerializer.Deserialize<ChatMessageContent[]>(json);
             
@@ -127,19 +130,44 @@ public static class ChatHistoryExtensions
             ConsoleIO.WriteSystem("Annuler supprimer l'historique");
         
     }
+    /// <summary>
+    /// Supprimer les contents vide dans l'historique
+    /// </summary>
+    /// <param name="history"></param>
+    /// <returns>ChatHistory</returns>
+    public static ChatHistory CleanHistory(this ChatHistory history)
+    {
+        for (int i = history.Count - 1; i >= 0; i--)
+        {
+            var message = history[i];
+            if (string.IsNullOrWhiteSpace(message.Content))
+            {
+                history.RemoveAt(i);
+            }
+        }
+        return history;
+    }
 
-    static string GetFileName()
+
+    #region Private Methods
+    private static string GetFileName(string savepath)
     {
         var fileName = ConsoleIO.Ask($"Nom du fichier à charger :");
+        if (Path.Exists(Path.Combine(savepath, fileName)))
+        {
+            ConsoleIO.Error($"Le fichier {fileName} existe déjà, veuillez choisir un autre nom.");
+            return GetFileName(savepath);
+        }
+
         if (!Path.HasExtension(fileName))
         {
             fileName += ".json";
         }
         return fileName;
     }
-    
-    
-    
-    
-    
+
+
+    #endregion
+
+
 }

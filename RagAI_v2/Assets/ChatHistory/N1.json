@@ -1,0 +1,41 @@
+[
+  {
+    "Role": {
+      "Label": "system"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "R\u00E9podez tousjours en fran\u00E7ais, sauf que le user demande"
+      }
+    ]
+  },
+  {
+    "Role": {
+      "Label": "user"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "hello"
+      }
+    ]
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": []
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Bonjour ! Comment puis-je vous aider aujourd\u0027hui ?"
+      }
+    ]
+  }
+]
