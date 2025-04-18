@@ -6,11 +6,10 @@ namespace RagAI_v2.Extensions;
 /// <summary>
 /// Discrete operations used when reducing chat history.
 /// </summary>
-/// <remarks>
-/// Allows for improved testability.
-/// </remarks>
-internal static class ChatHistoryReducerExtensions
+
+public static class ChatHistoryReducerExtensions
 {
+
     /// <summary>
     /// Extract a range of messages from the source history.
     /// </summary>

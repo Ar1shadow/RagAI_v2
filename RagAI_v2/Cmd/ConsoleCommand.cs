@@ -5,6 +5,7 @@ using RagAI_v2.Extensions;
 using RagAI_v2.Interface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
+using OllamaSharp.Models.Chat;
 using RagAI_v2.Prompts;
 
 namespace RagAI_v2.Cmd;
@@ -177,9 +178,8 @@ public class QueryCommand : ICommand
         ConsoleIO.WriteSystem(question);
         var searchAnswer = await _memory.SearchAsync(args[0]);
         var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, question);
-        //Tester
+        //Pour Tester
         ConsoleIO.WriteSystem($"prompt: {prompt}");
-        
         _history.AddUserMessage(prompt);
         ConsoleIO.WriteAssistant();
         var response = new StringBuilder();
@@ -277,10 +277,10 @@ public class CommandRouter
         // Enregistrer les commandes par défaut
         var commandList = new List<ICommand>
         {
-            new LoadCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
-            new SaveCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
+            new LoadCommand(history,config["ChatHistory:Directory"]??String.Empty),
+            new SaveCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new ExitCommand(),
-            new DeleteCommand(history,config["ChatHistoryReducer:Directory"]??String.Empty),
+            new DeleteCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new QueryCommand(history:history,memory:memory,config:config, chatService:chatService)
             
         };

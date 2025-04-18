@@ -37,7 +37,7 @@ namespace RagAI_v2.Test
 
             var pgcfg = new PostgresConfig()
             {
-                ConnectionString = config["MemoryDB:Postgres:ConnectString"],
+                ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
                 TableNamePrefix = "test-"
             };
 

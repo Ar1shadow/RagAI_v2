@@ -143,7 +143,8 @@ public class HistorySummarizationReducer : IChatHistoryReducer
             try
             {
                 // Summarize
-                ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.System, this.SummarizationInstructions)];
+                // Its better to use Role as User instead if System
+                ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.User, this.SummarizationInstructions)];
                 ChatMessageContent summaryMessage = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
                 summaryMessage.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
@@ -182,10 +183,14 @@ public class HistorySummarizationReducer : IChatHistoryReducer
                 yield return summaryMessage;
             }
 
-            foreach (var message in functionCallsToPreserve)
+            if (functionCallsToPreserve is not null)
             {
-                yield return message;
+                foreach (var message in functionCallsToPreserve)
+                {
+                    yield return message;
+                }
             }
+           
                 
             for (int index = truncationIndex; index < chatHistory.Count; ++index)
             {
