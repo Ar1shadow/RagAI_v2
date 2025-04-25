@@ -14,22 +14,24 @@ public static class SearchResultProcessor
     /// </summary>
     /// <param name="searchResult"></param>
     /// <param name="userQuestion"></param>
+    /// <param name="prompt"></param>>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    public static string FormatSearchResultPrompt(SearchResult searchResult, string userQuestion)
+    public static string FormatSearchResultPrompt(
+        SearchResult? searchResult, 
+        string? userQuestion, 
+        string? prompt = CustomTemplate.Rag.SimplePrompt)
     {
         if (searchResult == null)
-        {
-            throw new ArgumentNullException(nameof(searchResult));
-        }
+            ArgumentNullException.ThrowIfNull(searchResult);
 
         if (string.IsNullOrWhiteSpace(userQuestion))
         {
             throw new ArgumentException("User question cannot be null or whitespace.", nameof(userQuestion));
         }
 
-        var promptBuilder = new StringBuilder(CustomTemplate.Rag.Prompt);
+        var promptBuilder = new StringBuilder(prompt);
         promptBuilder.AppendLine();
         promptBuilder.AppendLine("[QUESTION]");
         promptBuilder.AppendLine(userQuestion);
@@ -63,6 +65,7 @@ public static class SearchResultProcessor
 
         return promptBuilder.ToString();
     }
+    
     /// <summary>
     /// Clean text by removing empty lines and trimming each line
     /// </summary>

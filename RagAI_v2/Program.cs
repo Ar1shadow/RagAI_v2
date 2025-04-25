@@ -1,4 +1,4 @@
-﻿#define module_9
+﻿#define module_10
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -59,4 +59,8 @@ await TestSearch.Run();
 
 #if module_9
 await TestCommand.Run();
+#endif
+
+#if module_10
+await TestHistory.Run();
 #endif

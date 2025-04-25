@@ -146,13 +146,6 @@ public class TestCommand
                 continue;
             }
             
-            
-            //if (userInput == "exit") break;
-            
-            // var search = await memory.SearchAsync(userInput);
-            // var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
-            // ConsoleIO.WriteSystem(prompt);
-            // history.AddUserMessage(prompt);
             ConsoleIO.WriteAssistant();
             var response = new StringBuilder();
             history.AddUserMessage(userInput);
@@ -168,6 +161,7 @@ public class TestCommand
         
         
         #endregion
-
+        
     }
+    
 }

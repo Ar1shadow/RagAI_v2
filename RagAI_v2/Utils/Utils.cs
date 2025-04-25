@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.KernelMemory.Pipeline;
 
 namespace RagAI_v2.Utils;
@@ -16,6 +17,10 @@ public static class Outils
         return input.StartsWith('/');
     }
     
-    
+    public static string CalculateSHA256(this BinaryData binaryData)
+    {
+        byte[] byteArray = SHA256.HashData(binaryData.ToMemory().Span);
+        return Convert.ToHexString(byteArray).ToLowerInvariant();
+    }
     
 }
