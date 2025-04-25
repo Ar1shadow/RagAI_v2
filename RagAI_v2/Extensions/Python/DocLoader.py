@@ -1,3 +1,5 @@
+# RagAI_v2/Extensions/Python/DocLoader.py
+
 from pathlib import Path
 from typing import Iterable, Union, Dict, Optional
 from docling.chunking import HybridChunker

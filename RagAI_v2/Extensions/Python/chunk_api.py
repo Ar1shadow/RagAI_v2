@@ -1,7 +1,9 @@
+#  RagAI_v2/Extensions/Python/chunk_api.py
+
 from fastapi import FastAPI, Form
 from pydantic import BaseModel
 from typing import List, Optional, Dict
-from DocLoader import *
+from DocLoader import loaders
 import os
 
 app = FastAPI()

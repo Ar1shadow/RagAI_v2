@@ -80,7 +80,7 @@ public static class Outils
         "uvicorn",
         "pydantic",
         "docling",
-        "transformer",
+        "transformers",
     };
     
     /// <summary>
@@ -88,13 +88,21 @@ public static class Outils
     /// </summary>
     public static void UpdatePipAndInstallPackages()
     {
-        //Verifier l'environnement python
+        string pythonCmd = OperatingSystem.IsWindows() ? "python" : "python3";
+
+        // Vérifier l'environnement python
         try
         {
-            var arguments = OperatingSystem.IsWindows() ? "python --version" : "python3 --version";
-            var (output, error) = RunCommand(arguments);
-            if(!string.IsNullOrWhiteSpace(output) && output.StartsWith("Python"))
+            var (output, error) = RunCommand($"{pythonCmd} --version");
+            if (!string.IsNullOrWhiteSpace(output) && output.StartsWith("Python"))
+            {
+                ConsoleIO.WriteSystem("Python existe.");
+            }
+            else
+            {
+                ConsoleIO.Error("Python n'existe pas !");
                 return;
+            }
         }
         catch
         {
@@ -103,23 +111,39 @@ public static class Outils
         }
 
         // Mettre à jour pip
-        RunCommand("python -m pip install --upgrade pip -q");
+        ConsoleIO.WriteSystem("Mise à jour de pip...");
+        var (pipOut, pipErr) = RunCommand($"{pythonCmd} -m pip install --upgrade pip");
+        if (!string.IsNullOrWhiteSpace(pipErr))
+        {
+            ConsoleIO.Error($"Erreur lors de la mise à jour de pip: {pipErr}");
+        }
+
         // Installer les packages python
         foreach (var package in PythonPackages)
         {
             try
             {
-                string command = $"pip install -q {package}";
-                RunCommand(command);
+                string command = $"{pythonCmd} -m pip install {package}";
+                var (installOut, installErr) = RunCommand(command);
+
+                if (!string.IsNullOrWhiteSpace(installErr))
+                {
+                    ConsoleIO.Error($"Erreur lors de l'installation du package {package}: {installErr}");
+                }
+                else
+                {
+                    ConsoleIO.WriteSystem($"Package {package} installé avec succès.");
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                ConsoleIO.Error("Unexpected error occurs during installation of python package");
+                ConsoleIO.Error($"Erreur inattendue lors de l'installation du package {package}");
                 throw;
             }
-            
         }
+
+        ConsoleIO.WriteSystem("Mise à jour des packages terminée.");
     }
 
     #endregion
