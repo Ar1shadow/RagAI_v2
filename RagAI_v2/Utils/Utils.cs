@@ -81,6 +81,10 @@ public static class Outils
         "pydantic",
         "docling",
         "transformers",
+        "langchain-docling",
+        "langchain-text-splitters",
+        "langchain_community",
+        
     };
     
     /// <summary>
@@ -100,8 +104,8 @@ public static class Outils
             }
             else
             {
-                ConsoleIO.Error("Python n'existe pas !");
-                return;
+             
+                throw new Exception("Python n'existe pas !");
             }
         }
         catch
@@ -123,6 +127,13 @@ public static class Outils
         {
             try
             {
+                var (checkOut, checkErr) = RunCommand($"{pythonCmd} -m pip show {package}");
+                if(!string.IsNullOrEmpty(checkOut) && checkOut.Contains("Name:"))
+                {
+                    ConsoleIO.WriteSystem($"Package {package} déja installé");
+                    continue;
+                }
+
                 string command = $"{pythonCmd} -m pip install {package}";
                 var (installOut, installErr) = RunCommand(command);
 
