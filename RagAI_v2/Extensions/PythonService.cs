@@ -43,16 +43,16 @@ public class PythonChunkService : IDisposable
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
 
-        var output = _process.StandardOutput.ReadToEndAsync();
-        var error = _process.StandardError.ReadToEndAsync();
-        if (output != null)
-        {
-            Console.WriteLine("Python Service Output: " + await output);
-        }
-        if (error != null)
-        {
-            throw new Exception("Python Service Error: " + await error);
-        }
+        // var output = _process.StandardOutput.ReadToEndAsync();
+        // var error = _process.StandardError.ReadToEndAsync();
+        // if (output != null)
+        // {
+        //     Console.WriteLine("Python Service Output: " + await output);
+        // }
+        // if (error != null)
+        // {
+        //     throw new Exception("Python Service Error: " + await error);
+        // }
 
         // Attendre que FastAPI soit prêt (scruter /ping)
         for (int i = 0; i < 30; i++)

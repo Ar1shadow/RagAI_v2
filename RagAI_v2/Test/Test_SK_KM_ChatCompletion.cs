@@ -99,9 +99,6 @@ public static class Test_SK_KM_ChatCompletion
             else
                 ConsoleIO.WriteSystem($" --Document ID :{documentID} déja importé");
         }
-     
-
-       
         
         //var searchAnswer = await memory.SearchAsync("what is NASA's projet");
         //var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, "what is NASA's projet");

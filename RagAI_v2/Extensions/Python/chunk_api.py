@@ -11,17 +11,17 @@ print("Initialisation du serveur...")
 print("Chargement de Docling...")
 
 from DocLoader import DocLoaders
-print("Docling chargé avec succès.")
+print("Docling chargï¿½ avec succï¿½s.")
 
 app = FastAPI()
-print("Instance FastAPI créée.")
+print("Instance FastAPI crï¿½ï¿½e.")
 
-class ChunckRequest(BaseModel):
+class ChunkRequest(BaseModel):
     file_path: str
     
 
 @app.post("/chunk", response_model=List[str])
-async def chunk_file(request : ChunckRequest) -> List[str]:
+async def chunk_file(request : ChunkRequest) -> List[str]:
     file_path = request.file_path
 
     if not os.path.exists(file_path):

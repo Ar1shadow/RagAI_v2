@@ -17,7 +17,9 @@ namespace RagAI_v2.Test
             {
                 // Démarrer le service Python
                 ConsoleIO.WriteSystem("Démarrage du Service Python");
-                await pythonService.StartAsync(@"Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Extensions\Python\run_server.py");
+                // /Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Extensions/Python/run_server.py
+                // Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Extensions\Python\run_server.py
+                await pythonService.StartAsync(@"/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Extensions/Python/run_server.py");
 
 
                 // Chemin du fichier à traiter

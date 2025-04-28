@@ -31,7 +31,7 @@ public class ChatReducerTests
             .UpdateChatModelConfig("appsettings.json")
             .Build();
         // Choix du Chat modèle
-        var model = "llama3.2:latest";
+        var model = "llama3.2";
           
         var kernelBuilder = Kernel.CreateBuilder();
          
