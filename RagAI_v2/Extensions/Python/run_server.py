@@ -1,7 +1,7 @@
-# run_server.py
+# RagAI_v2/Extensions/Python/run_server.py
 
 import uvicorn
-from chunk_api import app  # 确保 chunk_api.py 中定义了 app
+from chunk_api import app  # assurer app soit bien défini dans chunk_api.py
 import sys
 import os
 

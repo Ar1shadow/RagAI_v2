@@ -1,4 +1,4 @@
-﻿#define module_10
+﻿#define module_11
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -63,4 +63,8 @@ await TestCommand.Run();
 
 #if module_10
 await TestHistory.Run();
+#endif
+
+#if module_11
+await PythonServiceTest.Run();
 #endif

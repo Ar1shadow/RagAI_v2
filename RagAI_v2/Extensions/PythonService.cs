@@ -8,6 +8,7 @@ public class PythonChunkService : IDisposable
     private Process? _process;
     private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
     private bool _isStarted = false;
+    private readonly string _pythonBasePort = "http://127.0.0.1:8000/";
 
 
     public async Task StartAsync(string pythonScriptPath)
@@ -16,8 +17,8 @@ public class PythonChunkService : IDisposable
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = "python",
-            Arguments = pythonScriptPath,
+            FileName = OperatingSystem.IsWindows() ? "python" : "python3",
+            Arguments = $"\"{pythonScriptPath}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -27,12 +28,12 @@ public class PythonChunkService : IDisposable
         _process = new Process { StartInfo = startInfo };
         _process.Start();
 
-        // 等待 FastAPI 就绪（轮询 /ping）
+        // Attendre que FastAPI soit prêt (scruter /ping)
         for (int i = 0; i < 30; i++)
         {
             try
             {
-                var resp = await _httpClient.GetAsync("http://127.0.0.1:8000/ping");
+                var resp = await _httpClient.GetAsync(_pythonBasePort+"ping");
                 if (resp.IsSuccessStatusCode)
                 {
                     _isStarted = true;
@@ -59,7 +60,7 @@ public class PythonChunkService : IDisposable
             { new StringContent(filePath), "file_path" }
         };
 
-        var response = await _httpClient.PostAsync("http://127.0.0.1:8000/chunk", content);
+        var response = await _httpClient.PostAsync(_pythonBasePort+"chunk", content);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<List<string>>();
