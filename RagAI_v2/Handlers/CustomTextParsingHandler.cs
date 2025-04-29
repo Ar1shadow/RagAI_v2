@@ -65,8 +65,7 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
         {
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = [];
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile
-                         .GeneratedFiles)
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
                 if (uploadedFile.AlreadyProcessedBy(this))
                 {
@@ -78,7 +77,7 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
             var sourceFile = uploadedFile.Name;
             
             var chunks = await _pythonService.GetChunksAsync(sourceFile);
-            _pythonService.Dispose(); 
+            //_pythonService.Dispose(); 
             
             if (chunks.Count == 0) { continue; }
 
