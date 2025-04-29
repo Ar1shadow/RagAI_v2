@@ -1,28 +1,18 @@
 # RagAI_v2/Extensions/Python/DocLoader.py
 
 from pathlib import Path
-from typing import Iterable, Union, Dict, Optional
+from typing import Iterable, Union, Dict, Optional, Iterator
 from docling.chunking import HybridChunker
 from docling.pipeline.simple_pipeline import SimplePipeline
 from langchain_docling import DoclingLoader
-from docling.datamodel.pipeline_options import (AcceleratorOptions, AcceleratorDevice, PdfPipelineOptions,
-                                                TableStructureOptions)
+from docling.datamodel.pipeline_options import (PdfPipelineOptions,TableStructureOptions)
 from docling.datamodel.base_models import InputFormat
 from docling.document_converter import DocumentConverter, PdfFormatOption, WordFormatOption
 from langchain_docling.loader import ExportType
-from langchain_text_splitters import MarkdownHeaderTextSplitter
-
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 from langchain_community.vectorstores.utils import filter_complex_metadata
 
-
-FILE_PATH_1 = '/Users/lipengcheng/Downloads/OCR-free.pdf'
-FILE_PATH_2 = '/Users/lipengcheng/Downloads/wang2020.pdf'
-FILE_PATH_3 = "/Users/lipengcheng/Downloads/evaluation_stage_47423.docx"
-FILE_PATH_4 = "/Users/lipengcheng/Downloads/CuisineS3.docx"
-FILE_PATH_5 = "/Users/lipengcheng/Downloads/mixed.md"
-FILE_PATH_6 = "/Users/lipengcheng/Downloads/powerpoint_with_image.pptx"
-FILE_PATH_7 = "/Users/lipengcheng/Downloads/test-01.xlsx"
-FILE_PATH_8 = "/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Assets/2023AnnualReport.pdf"
 
 # c'est default dans le processus de Docling
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
@@ -40,7 +30,8 @@ class MimeTypesDetection:
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "text/markdown",
             "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain",
         }
 
         # Extension de fichiers mappées aux types MIME
@@ -115,38 +106,47 @@ class MimeTypesDetection:
         return self._extension_types.get(extension)
 
 
+
 # Chargeur de documents intelligent selon le type MIME détecté
 class DocLoaders:
-    def __init__(self,
-                 file_path: Union[str, Iterable[str]]
-                 ):
+    '''
+        Si des nouveaux loder vont être ajoutés, 
+        modifiez la liste support_type dans la classe MimeTypesDetection,
+        modifiez Méthodes load dans la classe Docloaders,
+        implementez le nouveau loader
+    '''
+    def __init__(self,file_path: Union[str, Iterable[str]]):
+
         # Gère un ou plusieurs chemins de fichiers
         self._file_paths = (
             file_path
             if isinstance(file_path, Iterable) and not isinstance(file_path, str)
             else [file_path]
         )
+        valide_files = []
         self._mimetype_detector = MimeTypesDetection()
+        # ignorer les fichiers de type non supporté
         for file in self._file_paths:
             if not self._mimetype_detector.support_type(file):
-                raise ValueError(f"Unsupported file type: {self._mimetype_detector.get_file_type(file)}")
-
+                print(f"Unsupported file type: {self._mimetype_detector.get_file_type(file)}")
+            else:
+                valide_files.append(file)               
+        
+        self._file_paths = valide_files
+        self.MAX_Tokens = 1000
+        
     # Traitement pour fichier PDF
     def __pdf_loader(self):
         pipeline_options = PdfPipelineOptions(
             do_table_structure = True,  # True: perform table structure extraction
             do_ocr = False,
             table_structure_options=TableStructureOptions(do_cell_matching=True),
-            accelerator_options=AcceleratorOptions(
-                num_threads=8,
-                device=AcceleratorDevice.MPS
-            )
         )
         #_loader = PyMuPDFLoader(self._file_paths)
         doc_convertor = DocumentConverter(
             format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
         )
-        _loader = DoclingLoader(self._file_paths,converter=doc_convertor, chunker=HybridChunker())
+        _loader = DoclingLoader(self._file_paths,converter=doc_convertor, chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
         filter_documents = filter_complex_metadata(_loader.load())
         return filter_documents
 
@@ -156,8 +156,10 @@ class DocLoaders:
             allowed_formats=[InputFormat.DOCX],
             format_options={InputFormat.DOCX: WordFormatOption(pipeline_cls=SimplePipeline)}
         )
-        _loader = DoclingLoader(self._file_paths,converter=doc_convertor)
+        _loader = DoclingLoader(self._file_paths,converter=doc_convertor,chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
         filter_documents = filter_complex_metadata(_loader.load())
+       
+        
         return filter_documents
 
     # Traitement pour fichier PowerPoint (.pptx)
@@ -166,7 +168,7 @@ class DocLoaders:
             allowed_formats=[InputFormat.PPTX],
         )
 
-        _loader = DoclingLoader(self._file_paths, converter=doc_convertor)
+        _loader = DoclingLoader(self._file_paths, converter=doc_convertor,chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
         filter_documents = filter_complex_metadata(_loader.load())
         return filter_documents
 
@@ -175,7 +177,7 @@ class DocLoaders:
         doc_convertor = DocumentConverter(
             allowed_formats=[InputFormat.MD],
         )
-        _loader = DoclingLoader(self._file_paths, converter=doc_convertor,export_type=ExportType.MARKDOWN)
+        _loader = DoclingLoader(self._file_paths, converter=doc_convertor,export_type=ExportType.MARKDOWN,chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
 
         _docs = _loader.load()
         splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[
@@ -196,6 +198,32 @@ class DocLoaders:
         filter_documents = filter_complex_metadata(_loader.load())
         return filter_documents
 
+    # Traitement pour plain text(.txt)
+    class __text_loader__:
+        def __init__(self, file_path: str, chunk_size :int = 1000, chunk_overlap : int = 200):
+            self.file_path = file_path
+            self.chunk_size = chunk_size
+            self.chunk_overlap = chunk_overlap
+
+
+        def load(self) -> Iterator[Document] :
+
+            if not self.file_path.lower().endswith(".txt"):
+                raise ValueError(f"Type de fichier non supporté pour txt chargeur : {self.file_path}")
+
+            with open(self.file_path, "r" , encoding="utf-8") as f:
+                raw_text = f.read()
+            splitter = RecursiveCharacterTextSplitter(
+                separators=["\n\n","\r","\n",".",""," "],
+                chunk_size = self.chunk_size,
+                chunk_overlap = self.chunk_overlap
+                )
+            chunks = splitter.split_text(raw_text)
+
+            documents = [Document(page_content=chunk) for chunk in chunks]
+            return documents
+        
+
     def load(self):
         # Sélectionne dynamiquement le bon chargeur en fonction du type MIME
         for file in self._file_paths:
@@ -210,6 +238,8 @@ class DocLoaders:
                 return self.__md_loader()
             if _type == "application/vnd.ms-excel" or _type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
                 return self.__excel_loader()
+            if _type == "text/plain":
+                return self.__text_loader__(file).load()
 
 
 

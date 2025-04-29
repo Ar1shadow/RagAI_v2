@@ -8,6 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Assets\NewFolder\**" />
+      <EmbeddedResource Remove="Assets\NewFolder\**" />
+      <None Remove="Assets\NewFolder\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="Microsoft.KernelMemory.AI.Ollama" Version="0.98.250324.1" />
       <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.98.250324.1" />
       <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.98.250324.1" />

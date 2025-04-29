@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace RagAI_v2.Extensions;
 
-public class PythonChunkService : IDisposable
+public class PythonChunkService() : IDisposable
 {
     private Process? _process;
     private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
@@ -92,15 +92,21 @@ public class PythonChunkService : IDisposable
         }
         throw new Exception("Python Service Failed！");
     }
-
+    /// <summary>
+    /// Appeler Python Api à analyser le fichier
+    /// </summary>
+    /// <param name="filePath">le chemin absolu du fichier</param>
+    /// <returns>les morceaux coupés du fichier</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="Exception"></exception>
     public async Task<List<string>> GetChunksAsync(string filePath)
     {
-        if (!_isStarted) throw new InvalidOperationException("SLe service Python n'est pas démarré.");
+        if (!_isStarted) throw new InvalidOperationException("Le service Python n'est pas démarré.");
         try
         {
             ConsoleIO.WriteSystem("Envoi du chemin du fichier au service Python...");
             ConsoleIO.WriteSystem("Le chemin du fichier : " + filePath);
-            var response = await _httpClient.PostAsJsonAsync(_pythonBasePort+"chunk", new {path = filePath});
+            var response = await _httpClient.PostAsJsonAsync(_pythonBasePort+"chunk", new {file_path = filePath});
 
             ConsoleIO.WriteSystem("Réponse Http : " + response.StatusCode + response.ReasonPhrase);
 
