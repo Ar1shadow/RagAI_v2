@@ -9,11 +9,12 @@ public class PythonChunkService() : IDisposable
     private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
     private bool _isStarted = false;
     private readonly string _pythonBasePort = "http://127.0.0.1:8000/";
-    private bool _disposed = false;
+    
 
+    public bool IsStarted => _isStarted && _process is { HasExited:false};
     public async Task StartAsync(string pythonScriptPath)
     {
-        if (_isStarted) return;
+        if (_isStarted && _process is { HasExited : false}) return;
 
         var startInfo = new ProcessStartInfo
         {
@@ -140,8 +141,7 @@ public class PythonChunkService() : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
+        if (!_isStarted) return;
 
         try
         {
@@ -149,7 +149,7 @@ public class PythonChunkService() : IDisposable
             {
                 ConsoleIO.WriteSystem("Fermeture du service Python...");
 
-                //_process.CloseMainWindow(); // D'abord essayer de fermer proprement (si GUI)
+               
                 if (!_process.WaitForExit(3000)) // Attendre 3 secondes maximum
                 {
                     ConsoleIO.Warning("Service Python ne répond pas, tentative de terminaison forcée...");
@@ -165,6 +165,7 @@ public class PythonChunkService() : IDisposable
         {
             _process?.Dispose();
             _process = null;
+            _isStarted = false;
             ConsoleIO.WriteSystem("Service Python fermé.");
         }
     }
