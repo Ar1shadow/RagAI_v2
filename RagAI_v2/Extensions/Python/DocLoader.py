@@ -162,6 +162,18 @@ class DocLoaders:
         
         return filter_documents
 
+    def __gerneral_loader__(self):
+        doc_convertor = DocumentConverter(
+            allowed_formats=[
+                InputFormat.PPTX,
+                InputFormat.XLSX,
+                InputFormat.HTML,
+                ],
+        )
+        _loader = DoclingLoader(self._file_paths, converter=doc_convertor,chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
+        filter_documents = filter_complex_metadata(_loader.load())
+        return filter_documents
+
     # Traitement pour fichier PowerPoint (.pptx)
     def __ppt_loader(self):
         doc_convertor = DocumentConverter(

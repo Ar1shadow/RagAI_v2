@@ -57,9 +57,14 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
     public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        Outils.UpdatePipAndInstallPackages();
+        //Outils.UpdatePipAndInstallPackages();
         // Appeler à un service FastAPI en Python
-        await _pythonService.StartAsync(AppPaths.PythonScript);
+        if (this._pythonService.IsStarted == false)
+        {
+            this._log.LogInformation("Starting Python service");
+            await this._pythonService.StartAsync(AppPaths.PythonScript);
+        }
+        
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = [];
