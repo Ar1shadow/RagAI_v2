@@ -92,15 +92,18 @@ namespace RagAI_v2.Test
             var kernel = kernelBuilder.Build();
             #endregion
 
+
+
             #region importation des document
-            ConsoleIO.WriteSystem("Supprimer les anciens fichiers");
-            var list = await memory.ListIndexesAsync();
-            foreach (var index in list)
-            {
-                ConsoleIO.WriteSystem($"Index : {index.Name}");
-                await memory.DeleteIndexAsync(index.Name);
-                ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
-            }
+            //ConsoleIO.WriteSystem("Supprimer les anciens fichiers");
+            //var list = await memory.ListIndexesAsync();
+            //foreach (var index in list)
+            //{
+            //    ConsoleIO.WriteSystem($"Index : {index.Name}");
+
+            //    await memory.DeleteIndexAsync(index.Name);
+            //    ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
+            //}
 
             var sw = Stopwatch.StartNew();
             // charger document 
@@ -112,10 +115,10 @@ namespace RagAI_v2.Test
                 ConsoleIO.WriteSystem($"Fichier : {file}");
             }
             ConsoleIO.WriteSystem("Importation commence");
-            for (int i = 0; i < files.Length; i++)
+            for (int i = 4; i < 5; i++)
             {
                 var file = files[i];
-                var documentID = $"doc{i}";
+                var documentID = $"NASA";
                 if (!await memory.IsDocumentReadyAsync(documentID))
                 {
                     var id = await memory.ImportDocumentAsync(
@@ -131,6 +134,25 @@ namespace RagAI_v2.Test
             ConsoleIO.WriteSystem("l'importation avec succès");
             #endregion
 
+            #region importation des document via KM
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    var file = files[i];
+            //    var documentID = $"doc{i}KM";
+            //    if (!await memory.IsDocumentReadyAsync(documentID))
+            //    {
+            //        var id = await memory.ImportDocumentAsync(
+            //            file,
+            //            documentId: documentID,
+            //            steps: CustomConstants.DefaultPipeline);
+            //        ConsoleIO.WriteSystem($" --Document ID :{documentID} importé à {sw.Elapsed} s");
+            //        sw.Restart();
+            //    }
+            //    else
+            //        ConsoleIO.WriteSystem($" --Document ID :{documentID} déja importé");
+            //}
+            //ConsoleIO.WriteSystem("l'importation avec succès");
+            #endregion
 
 
             #region chat loop

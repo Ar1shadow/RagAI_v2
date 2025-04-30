@@ -6,7 +6,7 @@ namespace RagAI_v2.Extensions;
 public class PythonChunkService() : IDisposable
 {
     private Process? _process;
-    private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+    private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(100) };
     private bool _isStarted = false;
     private readonly string _pythonBasePort = "http://127.0.0.1:8000/";
     
@@ -14,7 +14,7 @@ public class PythonChunkService() : IDisposable
     public bool IsStarted => _isStarted && _process is { HasExited:false};
     public async Task StartAsync(string pythonScriptPath)
     {
-        if (_isStarted && _process is { HasExited : false}) return;
+        if (IsStarted) return;
 
         var startInfo = new ProcessStartInfo
         {

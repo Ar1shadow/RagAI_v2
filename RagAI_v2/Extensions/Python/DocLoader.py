@@ -5,13 +5,14 @@ from typing import Iterable, Union, Dict, Optional, Iterator
 from docling.chunking import HybridChunker
 from docling.pipeline.simple_pipeline import SimplePipeline
 from langchain_docling import DoclingLoader
-from docling.datamodel.pipeline_options import (PdfPipelineOptions,TableStructureOptions)
+from docling.datamodel.pipeline_options import (EasyOcrOptions, PdfPipelineOptions,TableStructureOptions)
 from docling.datamodel.base_models import InputFormat
 from docling.document_converter import DocumentConverter, PdfFormatOption, WordFormatOption
 from langchain_docling.loader import ExportType
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.vectorstores.utils import filter_complex_metadata
+from transformers import AutoTokenizer
 
 
 # c'est default dans le processus de Docling
@@ -129,24 +130,28 @@ class DocLoaders:
         for file in self._file_paths:
             if not self._mimetype_detector.support_type(file):
                 print(f"Unsupported file type: {self._mimetype_detector.get_file_type(file)}")
+                continue
             else:
                 valide_files.append(file)               
         
         self._file_paths = valide_files
         self.MAX_Tokens = 1000
+        self.MODEL_ID = EMBED_MODEL # default model
+        self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL_ID)
         
     # Traitement pour fichier PDF
     def __pdf_loader(self):
         pipeline_options = PdfPipelineOptions(
-            do_table_structure = True,  # True: perform table structure extraction
-            do_ocr = False,
-            table_structure_options=TableStructureOptions(do_cell_matching=True),
+            do_table_structure = False,  # True: perform table structure extraction
+            do_ocr = True, # True: perform OCR, replace programmatic PDF text
+            table_structure_options=TableStructureOptions(do_cell_matching=False),
+            ocr_options=EasyOcrOptions(force_full_page_ocr=True)
         )
         #_loader = PyMuPDFLoader(self._file_paths)
         doc_convertor = DocumentConverter(
             format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
         )
-        _loader = DoclingLoader(self._file_paths,converter=doc_convertor, chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
+        _loader = DoclingLoader(self._file_paths,converter=doc_convertor, chunker=HybridChunker(tokenizer=self.tokenizer,max_tokens=self.MAX_Tokens, merge_peers=True,))
         filter_documents = filter_complex_metadata(_loader.load())
         return filter_documents
 
@@ -161,8 +166,8 @@ class DocLoaders:
        
         
         return filter_documents
-
-    def __gerneral_loader__(self):
+     # Traitement pour fichier PowerPoint (.pptx) /  Excel (.xlsx) / HTML
+    def __general_loader__(self):
         doc_convertor = DocumentConverter(
             allowed_formats=[
                 InputFormat.PPTX,
@@ -174,15 +179,6 @@ class DocLoaders:
         filter_documents = filter_complex_metadata(_loader.load())
         return filter_documents
 
-    # Traitement pour fichier PowerPoint (.pptx)
-    def __ppt_loader(self):
-        doc_convertor = DocumentConverter(
-            allowed_formats=[InputFormat.PPTX],
-        )
-
-        _loader = DoclingLoader(self._file_paths, converter=doc_convertor,chunker=HybridChunker(max_tokens=self.MAX_Tokens, merge_peers=True,))
-        filter_documents = filter_complex_metadata(_loader.load())
-        return filter_documents
 
     # Traitement pour fichier Markdown (.md)
     def __md_loader(self):
@@ -201,14 +197,6 @@ class DocLoaders:
         filter_documents = filter_complex_metadata(splits)
         return filter_documents
 
-    # Traitement pour fichier Excel (.xlsx)
-    def __excel_loader(self):
-        doc_convertor = DocumentConverter(
-            allowed_formats=[InputFormat.XLSX],
-        )
-        _loader = DoclingLoader(self._file_paths, converter=doc_convertor)
-        filter_documents = filter_complex_metadata(_loader.load())
-        return filter_documents
 
     # Traitement pour plain text(.txt)
     class __text_loader__:
@@ -245,11 +233,11 @@ class DocLoaders:
             if _type == "application/msword" or _type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 return self.__word_loader()
             if _type == "application/vnd.ms-powerpoint" or _type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-                return self.__ppt_loader()
+                return self.__general_loader__()
             if _type == "text/markdown":
                 return self.__md_loader()
-            if _type == "application/vnd.ms-excel" or _type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                return self.__excel_loader()
+            if _type == "application/vnd.ms-excel" or _type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" or _type == "text/html":
+                return self.__general_loader__()
             if _type == "text/plain":
                 return self.__text_loader__(file).load()
 
