@@ -40,6 +40,7 @@ public static class CustomConstants
     public const string PipelineStepsDeleteGeneratedFiles = "delete_generated_files";
     public const string PipelineStepsDeleteDocument = "private_delete_document";
     public const string PipelineStepsDeleteIndex = "private_delete_index";
+    public const string PipelineStepsParsing = "extract_partition";
 
     // Pipeline steps
     public static readonly string[] DefaultPipeline =
@@ -67,4 +68,9 @@ public static class CustomConstants
     [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords, PipelineStepsDeleteGeneratedFiles
     ];
+
+    public static readonly string[] PipelineCustomParsing =
+ [
+     PipelineStepsParsing, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+ ];
 }

@@ -11,10 +11,12 @@ print("Initialisation du serveur...")
 print("Chargement de Docling...")
 
 from DocLoader import DocLoaders
-print("Docling charg� avec succ�s.")
+print("Docling chargé avec succès.")
+
+
 
 app = FastAPI()
-print("Instance FastAPI cr��e.")
+print("Instance FastAPI créée.")
 
 class ChunkRequest(BaseModel):
     file_path: str
@@ -28,8 +30,10 @@ async def chunk_file(request : ChunkRequest) -> List[str]:
         raise HTTPException(status_code=400, detail="Le chemin n'existe pas: "+file_path)
 
     if os.path.isdir(file_path):
+        print("Parcourir le répertoire...")
         files = [os.path.join(file_path, f) for f in os.listdir(file_path) if os.path.isfile(os.path.join(file_path, f))]
     else:
+        print("Traitement du seul fichier...")
         files = [file_path]
 
     loader = DocLoaders(files)

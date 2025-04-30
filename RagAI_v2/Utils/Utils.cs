@@ -23,6 +23,7 @@ public static class Outils
         byte[] byteArray = SHA256.HashData(binaryData.ToMemory().Span);
         return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
+
     /// <summary>
     /// Exécuter les commandes de la console via le système d'exploitation.
     /// Retourne un tuple (output, error).

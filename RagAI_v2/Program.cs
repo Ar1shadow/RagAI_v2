@@ -1,4 +1,4 @@
-﻿#define module_11
+﻿#define module_12
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -12,6 +12,7 @@ using RagAI_v2;
 using RagAI_v2.Test;
 using RagAI_v2.Extensions;
 using Spectre.Console;
+using RagAI_v2.Utils;
 
 
 
@@ -21,7 +22,7 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false)
     .UpdateChatModelConfig("appsettings.json")
     .Build();
-
+Console.WriteLine(AppPaths.Root);
 
 #if module_1
 #pragma warning disable KMEXP00
@@ -67,4 +68,8 @@ await TestHistory.Run();
 
 #if module_11
 await PythonServiceTest.Run();
+#endif
+
+#if module_12
+await TestHandler.Run();
 #endif

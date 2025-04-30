@@ -19,12 +19,13 @@ namespace RagAI_v2.Test
                 ConsoleIO.WriteSystem("Démarrage du Service Python");
                 // /Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Extensions/Python/run_server.py
                 // Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Extensions\Python\run_server.py
-                await pythonService.StartAsync(@"/Users/lipengcheng/RiderProjects/RagAI_v2/RagAI_v2/Extensions/Python/run_server.py");
+                await pythonService.StartAsync(@"Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Extensions\Python\run_server.py");
 
 
                 // Chemin du fichier à traiter
                 ConsoleIO.WriteSystem("Demande de découpage du fichier");
-                string filePath = "/Users/lipengcheng/Downloads/OCR-free.pdf";
+                // Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Assets\Chenyu SHAO - Rapport de stage GAMBA 2024.pdf
+                string filePath = @"Z:\Stagiaires\Pengcheng LI\Code\RagAI_v2\RagAI_v2\Assets\file1-Wikipedia-Carbon.txt";
                 
 
                 // Obtenir les chunks du fichier
@@ -35,7 +36,9 @@ namespace RagAI_v2.Test
                 Console.WriteLine("Chunks obtenus:");
                 foreach (var chunk in chunks)
                 {
+                    Console.WriteLine("============");
                     Console.WriteLine(chunk);
+                    Console.WriteLine("============");
                 }
             }
             catch (Exception ex)

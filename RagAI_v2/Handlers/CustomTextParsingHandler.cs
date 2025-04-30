@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.WebPages;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.Pipeline;
 using RagAI_v2.Extensions;
@@ -18,7 +19,7 @@ namespace RagAI_v2.Handlers;
 public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly IEnumerable<IContentDecoder> _decoders;
+    private readonly SimpleFileStorageConfig _config;
     private readonly IWebScraper _webScraper;
     private readonly ILogger<TextExtractionHandler> _log;
     private readonly PythonChunkService _pythonService;
@@ -31,20 +32,18 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="decoders">The list of content decoders for extracting content</param>
-    /// <param name="webScraper">Web scraper instance used to fetch web pages</param>
+    /// <param name="config">To read the pipeline information in the dcument storage</param>
     /// <param name="loggerFactory">Application logger factory</param>
     public CustomTextParsingHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        IEnumerable<IContentDecoder> decoders,
+        SimpleFileStorageConfig config,
         PythonChunkService pythonService,
-        IWebScraper? webScraper = null,
         ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._decoders = decoders;
+        this._config = config;
         this._pythonService = pythonService;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextExtractionHandler>();
         //TODO: implement web scraper in the python script
@@ -60,12 +59,13 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
     {
         Outils.UpdatePipAndInstallPackages();
         // Appeler à un service FastAPI en Python
-        await _pythonService.StartAsync("RagAI_v2/Extensions/Python/run_server.py");
+        await _pythonService.StartAsync(AppPaths.PythonScript);
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = [];
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile
+                         .GeneratedFiles)
             {
                 if (uploadedFile.AlreadyProcessedBy(this))
                 {
@@ -75,8 +75,9 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
             }
             
             var sourceFile = uploadedFile.Name;
-            
-            var chunks = await _pythonService.GetChunksAsync(sourceFile);
+            var sourceFilePath = Path.Combine(this._config.Directory, pipeline.Index, pipeline.DocumentId,sourceFile);
+            Console.WriteLine($"Processing file: {sourceFile} - [{sourceFilePath}]");
+            var chunks = await _pythonService.GetChunksAsync(sourceFilePath);
             //_pythonService.Dispose(); 
             
             if (chunks.Count == 0) { continue; }
@@ -116,7 +117,7 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
                 uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
             }
         }
-
+        _pythonService.Dispose();
         return (ReturnType.Success, pipeline);
     }
     
