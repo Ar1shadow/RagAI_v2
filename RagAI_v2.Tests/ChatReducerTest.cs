@@ -2,12 +2,12 @@
 using Moq;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
-using RagAI_v2.ChatHistoryReducer;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using RagAI_v2.Extensions;
+using RagAI_v2.Extensions.ChatHistoryReducer;
 using Xunit.Abstractions;
 
 namespace RagAI_v2.Tests;

@@ -8,7 +8,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagAI_v2;
 using RagAI_v2.Extensions;
+using RagAI_v2.Handlers;
 using RagAI_v2.Prompts;
+using RagAI_v2.SearchClient;
 
 namespace RagAI_v2.Test
 {
@@ -16,7 +18,7 @@ namespace RagAI_v2.Test
     {
         public static async Task Run() 
         {
-
+            #region Configuration
             // Ajouter le fichier de Config à environnement
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
@@ -33,33 +35,27 @@ namespace RagAI_v2.Test
             // Choix de l'embedding modèle
             var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
                 config.GetSection("ChatModel:modelId").Get<List<string>>()!);
-
-
-            var pgcfg = new PostgresConfig()
-            {
-                ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
-                TableNamePrefix = "test-"
-            };
-
+            
             // Etablir kernel memory
             var memory = new KernelMemoryBuilder()
                 .WithOllamaTextGeneration(model)
                 .WithOllamaTextEmbeddingGeneration(embedding)
                 .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
-                .WithPostgresMemoryDb(pgcfg)
                 .WithSearchClientConfig(new SearchClientConfig()
                 {
                     MaxMatchesCount = 3,
                     Temperature = 0.2,
                     TopP = 0.3
                 })
-                .WithCustomTextPartitioningOptions(new TextPartitioningOptions()
+                .WithCustomPostgresMemoryDb(new PostgresConfig()
                 {
-                    MaxTokensPerParagraph = 1000,
-                    OverlappingTokens = 200,
+                    ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
+                    TableNamePrefix = "test-"
                 })
+                .WithCustomSearchClient<CustomSearchClient>()
                 .Build<MemoryServerless>();
-
+            memory.Orchestrator.AddHandler<CustomTextParsingHandler>(CustomConstants.PipelineStepsParsing);
+            #endregion
 
             var sw = Stopwatch.StartNew();
             // charger document 
@@ -111,11 +107,7 @@ namespace RagAI_v2.Test
 
 
             }
-
-
             
-
-
             ConsoleIO.WriteSystem("Test Search terminé");
             var list = await memory.ListIndexesAsync();
             foreach (var index in list)

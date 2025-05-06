@@ -2,7 +2,7 @@ namespace RagAI_v2.Prompts;
 
 public static class CustomTemplate
 {
-    public static class Rag
+    internal static class Rag
     {
         public const string FactTemplate =
             "=== Last update:{{$meta[last_update]}} ===\nSource:{{$source}}\n{{$content}}\n";
@@ -58,7 +58,7 @@ public static class CustomTemplate
            
     }
 
-    public static class Chat
+    internal static class Chat
     {
         public const string Prompt ="Répodez tousjours en français, sauf que le user demande";
             

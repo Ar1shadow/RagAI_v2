@@ -47,6 +47,6 @@ async def start_server(server, stop_event):
 
 if __name__ == "__main__":
     # chemin pour test temporaire utiliser un fichier de config ou un chemin relatif
-    os.environ["HF_HOME"] = "Z:\\Stagiaires\\Pengcheng LI\\Code\\RagAI_v2\\RagAI_v2\\Assets\\Models\\"
+    #os.environ["HF_HOME"] = "Z:\\Stagiaires\\Pengcheng LI\\Code\\RagAI_v2\\RagAI_v2\\Assets\\Models\\"
 
     run_uvicorn()
