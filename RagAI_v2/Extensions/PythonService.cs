@@ -12,6 +12,8 @@ public class PythonChunkService() : IDisposable
     
 
     public bool IsStarted => _isStarted && _process is { HasExited:false};
+    
+    
     public async Task StartAsync(string pythonScriptPath)
     {
         if (IsStarted) return;

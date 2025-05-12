@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using RagAI_v2.Extensions;
-using RagAI_v2.ChatHistoryReducer;
+using RagAI_v2.Extensions.ChatHistoryReducer;
 
 
 namespace RagAI_v2.Test;

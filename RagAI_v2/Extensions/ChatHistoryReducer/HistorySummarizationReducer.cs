@@ -1,9 +1,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using RagAI_v2.Extensions;
 
-
-namespace RagAI_v2.ChatHistoryReducer;
+namespace RagAI_v2.Extensions.ChatHistoryReducer;
 /// <summary>
 /// Reduce the chat history by summarizing message past the target message count.
 /// </summary>

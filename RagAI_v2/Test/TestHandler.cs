@@ -100,8 +100,7 @@ namespace RagAI_v2.Test
             //foreach (var index in list)
             //{
             //    ConsoleIO.WriteSystem($"Index : {index.Name}");
-
-            //    await memory.DeleteIndexAsync(index.Name);
+            //  await memory.DeleteIndexAsync(index.Name);
             //    ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
             //}
 
