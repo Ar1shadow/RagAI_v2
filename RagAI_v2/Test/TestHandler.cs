@@ -100,14 +100,13 @@ namespace RagAI_v2.Test
             //foreach (var index in list)
             //{
             //    ConsoleIO.WriteSystem($"Index : {index.Name}");
-
-            //    await memory.DeleteIndexAsync(index.Name);
+            //  await memory.DeleteIndexAsync(index.Name);
             //    ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
             //}
 
             var sw = Stopwatch.StartNew();
             // charger document 
-            string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"])
+            string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"]!)
                 .Where(file => !Path.GetFileName(file).StartsWith("."))
                 .ToArray();
             foreach (var file in files)
@@ -159,7 +158,7 @@ namespace RagAI_v2.Test
             var chatService = kernel.GetRequiredService<IChatCompletionService>();
             var history = new ChatHistory(CustomTemplate.Chat.Prompt);
             //Command
-            var router = new CommandRouter(config, history, memory, chatService);
+            var router = new CommandRouter(config, history, memory, chatService, kernel);
             //history.LoadHistory(config["ChatHistoryReducer:Directory"]);
 
             // Commencer Chat Loop

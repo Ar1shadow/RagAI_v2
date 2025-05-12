@@ -126,7 +126,7 @@ public class TestCommand
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
         var history = new ChatHistory(CustomTemplate.Chat.Prompt);
         //Command
-        var router = new CommandRouter(config, history, memory, chatService);
+        var router = new CommandRouter(config, history, memory, chatService, kernel);
         //history.LoadHistory(config["ChatHistoryReducer:Directory"]);
        
         // Commencer Chat Loop

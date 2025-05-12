@@ -1,21 +1,34 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OllamaSharp;
 using RagAI_v2;
+using RagAI_v2.Cmd;
 using RagAI_v2.Extensions;
+using RagAI_v2.Handlers;
 using RagAI_v2.Prompts;
+using RagAI_v2.SearchClient;
+using RagAI_v2.MemoryDataBase.Postgres;
+using RagAI_v2.Utils;
+using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
+using System;
 
 namespace RagAI_v2.Test
 {
+#pragma warning disable SKEXP0070
     public static class TestSearch
     {
         public static async Task Run() 
         {
+            #region Configuration
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromMinutes(100));
 
             // Ajouter le fichier de Config à environnement
             var config = new ConfigurationBuilder()
@@ -33,40 +46,75 @@ namespace RagAI_v2.Test
             // Choix de l'embedding modèle
             var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
                 config.GetSection("ChatModel:modelId").Get<List<string>>()!);
-
-
-            var pgcfg = new PostgresConfig()
-            {
-                ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
-                TableNamePrefix = "test-"
-            };
-
+            
             // Etablir kernel memory
             var memory = new KernelMemoryBuilder()
+                .AddSingleton<PythonChunkService, PythonChunkService>()
                 .WithOllamaTextGeneration(model)
                 .WithOllamaTextEmbeddingGeneration(embedding)
                 .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
-                .WithPostgresMemoryDb(pgcfg)
                 .WithSearchClientConfig(new SearchClientConfig()
                 {
-                    MaxMatchesCount = 3,
+                    MaxMatchesCount = 5,
                     Temperature = 0.2,
                     TopP = 0.3
                 })
-                .WithCustomTextPartitioningOptions(new TextPartitioningOptions()
+                .WithCustomPostgresMemoryDb(new CustomPostgresConfig()
                 {
-                    MaxTokensPerParagraph = 1000,
-                    OverlappingTokens = 200,
+                    ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
+                    TableNamePrefix = "test-"
                 })
+                .WithCustomSearchClient<CustomSearchClient>()
                 .Build<MemoryServerless>();
+            memory.Orchestrator.AddHandler<CustomTextParsingHandler>(CustomConstants.PipelineStepsParsing);
 
+
+            ConsoleIO.WriteSystem("Handlers ajoutés avec succès");
+
+            var kernelBuilder = Kernel.CreateBuilder();
+            kernelBuilder.Services.AddSingleton<HttpClient>(sp =>
+            {
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(20),
+                    BaseAddress = new Uri("http://localhost:11434")
+                };
+                return client;
+            });
+            kernelBuilder.Services.AddSingleton<OllamaApiClient>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new OllamaApiClient(httpClient, model!);
+            });
+
+            kernelBuilder.AddOllamaChatCompletion(
+                    ollamaClient: null,
+                    serviceId: null);
+
+            var kernel = kernelBuilder.Build();
+            #endregion
+
+            #region importation des document
+            //ConsoleIO.WriteSystem("Supprimer les anciens fichiers");
+            //var list = await memory.ListIndexesAsync();
+            //foreach (var index in list)
+            //{
+            //    ConsoleIO.WriteSystem($"Index : {index.Name}");
+            //    await memory.DeleteIndexAsync(index.Name);
+            //    ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
+            //}
 
             var sw = Stopwatch.StartNew();
             // charger document 
-            string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"])
+            string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"]!)
                 .Where(file => !Path.GetFileName(file).StartsWith("."))
                 .ToArray();
-            for (int i = 0; i < files.Length; i++)
+            foreach (var file in files)
+            {
+                ConsoleIO.WriteSystem($"Fichier : {file}");
+            }
+            ConsoleIO.WriteSystem("Importation commence");
+            for (int i = 0; i < 5; i++)
             {
                 var file = files[i];
                 var documentID = $"doc{i}";
@@ -75,55 +123,82 @@ namespace RagAI_v2.Test
                     var id = await memory.ImportDocumentAsync(
                         file,
                         documentId: documentID,
-                        steps: CustomConstants.PipelineRagWithoutLocalFiles);
+                        steps: CustomConstants.PipelineCustomParsing);
                     ConsoleIO.WriteSystem($" --Document ID :{documentID} importé à {sw.Elapsed} s");
                     sw.Restart();
                 }
                 else
                     ConsoleIO.WriteSystem($" --Document ID :{documentID} déja importé");
             }
+            ConsoleIO.WriteSystem("l'importation avec succès");
+            #endregion
 
 
 
+
+
+
+            #region chat loop
+            var chatService = kernel.GetRequiredService<IChatCompletionService>();
+            var history = new ChatHistory(CustomTemplate.Chat.Prompt);
+            //Command
+            var router = new CommandRouter(config, history, memory, chatService, kernel);
+            //history.LoadHistory(config["ChatHistoryReducer:Directory"]);
+
+            // Commencer Chat Loop
             var userInput = string.Empty;
-            while (userInput != "exit")
+            ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
+            ConsoleIO.WriteUser();
+            while (true)
             {
-                ConsoleIO.WriteUser();
+
+
                 userInput = Console.ReadLine() ?? string.Empty;
-               
                 if (string.IsNullOrWhiteSpace(userInput)) continue;
-                if (userInput == "exit") break;
+                if (Outils.IsCommand(userInput))
+                {
+                    await router.HandleCommand(userInput);
+                    ConsoleIO.WriteUser();
+                    continue;
+                }
+                var userInputRefined = await UserQueryProcessor.ReformulerUserInput(userInput, kernel);
+                ConsoleIO.WriteSystem(userInputRefined);
+                var searchAnswer = await memory.SearchAsync(userInputRefined);
 
-                var searchResult = await memory.SearchAsync(userInput);
-               
-                //foreach (var result in searchResult.Results)
+                foreach (var citation in searchAnswer.Results)
+                {
+                    Console.WriteLine($"Source: {citation.SourceName}");
+                    if (citation.Partitions.Count != 0)
+                    {
+                        foreach (var partition in citation.Partitions)
+                        {
+                            
+                            if (!string.IsNullOrWhiteSpace(partition.Text))
+                            {
+                                Console.WriteLine($"—— {partition.Text}-[score : {partition.Relevance}]");
+                            }
+                        }
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine();
+                var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, userInput);
+                //Pour Tester
+                ConsoleIO.WriteSystem($"prompt: {prompt}");
+
+                //ConsoleIO.WriteAssistant();
+                //var response = new StringBuilder();
+                //history.AddUserMessage(userInput);
+                //await foreach (var text in
+                //               chatService.GetStreamingChatMessageContentsAsync(history))
                 //{
-                //    ConsoleIO.WriteSystem($"Source : {result.SourceName}");
-                //    foreach (var item in result.Partitions) 
-                //    {
-                //        ConsoleIO.WriteSystem($"Partition : {item.PartitionNumber}");
-                //        ConsoleIO.WriteSystem($"Score : {item.Relevance}");
-                //        ConsoleIO.WriteSystem($"Texte : {item.Text}");
-                //    }
+                //    ConsoleIO.WriteAssistant(text);
+                //    response.Append(text);
                 //}
-                var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchResult,userInput);
-                ConsoleIO.WriteSystem($"Prompt : {prompt}");
-
-
+                //history.AddAssistantMessage(response.ToString());
+                ConsoleIO.WriteUser();
             }
-
-
-            
-
-
-            ConsoleIO.WriteSystem("Test Search terminé");
-            var list = await memory.ListIndexesAsync();
-            foreach (var index in list)
-            {
-                ConsoleIO.WriteSystem($"Index : {index.Name}");
-                await memory.DeleteIndexAsync(index.Name);
-                ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
-            }
+            #endregion
         }
     }
 }

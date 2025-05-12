@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using OllamaSharp.Models.Chat;
 using RagAI_v2.Prompts;
+using Microsoft.SemanticKernel;
 
 namespace RagAI_v2.Cmd;
 
@@ -140,6 +141,7 @@ public class QueryCommand : ICommand
     private readonly IKernelMemory _memory;
     private readonly IConfigurationRoot _config;
     private readonly IChatCompletionService _chatService;
+    private readonly Kernel _kernel;
     /// <summary>
     /// constructeur pour Commande Query
     /// </summary>
@@ -151,16 +153,18 @@ public class QueryCommand : ICommand
         ChatHistory history, 
         IKernelMemory memory, 
         IConfigurationRoot config, 
-        IChatCompletionService chatService)
+        IChatCompletionService chatService,
+        Kernel kernel)
     {
         _history = history;
         _memory = memory;
         _config = config;
         _chatService = chatService;
+        _kernel = kernel;
     }
     
     public string Name => "query";
-    public IEnumerable<string> Aliases => new[] { "rag" };
+    public IEnumerable<string> Aliases => new[] { "rag", "ask" };
     public string Description => "Poser une question en utilisant la fonction de RAG";
     public string Usage => "/query <question>";
     
@@ -175,8 +179,9 @@ public class QueryCommand : ICommand
         
         
         var question = string.Join(" ", args);
+        question = await UserQueryProcessor.ReformulerUserInput(question, _kernel);
         ConsoleIO.WriteSystem(question);
-        var searchAnswer = await _memory.SearchAsync(args[0]);
+        var searchAnswer = await _memory.SearchAsync(question);
         var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, question);
         //Pour Tester
         ConsoleIO.WriteSystem($"prompt: {prompt}");
@@ -271,7 +276,8 @@ public class CommandRouter
         IConfigurationRoot config, 
         ChatHistory history, 
         IKernelMemory memory,
-        IChatCompletionService chatService
+        IChatCompletionService chatService,
+        Kernel kernel
         )
     {
         // Enregistrer les commandes par défaut
@@ -281,7 +287,7 @@ public class CommandRouter
             new SaveCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new ExitCommand(),
             new DeleteCommand(history,config["ChatHistory:Directory"]??String.Empty),
-            new QueryCommand(history:history,memory:memory,config:config, chatService:chatService)
+            new QueryCommand(history:history,memory:memory,config:config, chatService:chatService, kernel)
             
         };
         _commands = commandList.ToDictionary(cmd => cmd.Name);

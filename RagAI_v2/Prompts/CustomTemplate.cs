@@ -2,7 +2,7 @@ namespace RagAI_v2.Prompts;
 
 public static class CustomTemplate
 {
-    public static class Rag
+    internal static class Rag
     {
         public const string FactTemplate =
             "=== Last update:{{$meta[last_update]}} ===\nSource:{{$source}}\n{{$content}}\n";
@@ -21,14 +21,22 @@ public static class CustomTemplate
             """
             Ta tâche est de comprendre la question et de générer une liste de mots-clés utiles à la recherche vectorielle.
 
-            Ne reformule pas la question. Ne réponds pas. N'explique pas.
-            Réponds uniquement avec des mots ou groupes de mots, séparés par des virgules.
+            -Ne reformule pas la question. 
+            -Ne réponds pas directement. N'explique pas.
+            -Réponds uniquement avec des mots ou groupes de mots, séparés par des virgules.
+            -Garder les mots ou expressions importantes de la question, sans les déformer.
+            -Préfère des groupes de mots exacts plutôt que des mots isolés(ex.: "intelligence artificielle", pas de "intelligence, artificielle").
+            -Garder des éléments importants de la question (nom; concepts, objectifs) et les noms propres tels quels (organisations, acronymes, personnes).
 
             #ExempleQuestion : Qui est le président actuel de SpaceX ?
-            Requête : président, SpaceX, Elon Musk
+            Requête : président actuel de SpaceX, SpaceX, Elon Musk, président 
 
             #ExempleQuestion : Combien de personnes travaillent chez Google ?
-            Requête : Google, effectifs, nombre d'employés
+            Requête :effectifs chez Google, nombre d'employés
+
+            #ExempleQuestion : Quelle est l'organisation qui publie les actualités de la NASA ?
+            Requête :éditeur, actualités de la NASA
+
             ======
             Question : {{$question}}
             Requête :
@@ -58,7 +66,7 @@ public static class CustomTemplate
            
     }
 
-    public static class Chat
+    internal static class Chat
     {
         public const string Prompt ="Répodez tousjours en français, sauf que le user demande";
             
