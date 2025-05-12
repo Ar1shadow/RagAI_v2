@@ -115,10 +115,10 @@ namespace RagAI_v2.Test
                 ConsoleIO.WriteSystem($"Fichier : {file}");
             }
             ConsoleIO.WriteSystem("Importation commence");
-            for (int i = 4; i < 5; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var file = files[i];
-                var documentID = $"NASA";
+                var documentID = $"doc1-withoutOCR";
                 if (!await memory.IsDocumentReadyAsync(documentID))
                 {
                     var id = await memory.ImportDocumentAsync(

@@ -143,7 +143,7 @@ class DocLoaders:
     def __pdf_loader(self):
         pipeline_options = PdfPipelineOptions(
             do_table_structure = False,  # True: perform table structure extraction
-            do_ocr = True, # True: perform OCR, replace programmatic PDF text
+            do_ocr = False, # True: perform OCR, replace programmatic PDF text
             table_structure_options=TableStructureOptions(do_cell_matching=False),
             ocr_options=EasyOcrOptions(force_full_page_ocr=True)
         )
