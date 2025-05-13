@@ -21,21 +21,25 @@ public static class CustomTemplate
             """
             Ta tâche est de comprendre la question et de générer une liste de mots-clés utiles à la recherche vectorielle.
 
+            -N'inclus aucune traduction. Garde tous les mots dans la langue d'origine, même s'ils sont abrégés.
             -Ne reformule pas la question. 
             -Ne réponds pas directement. N'explique pas.
             -Réponds uniquement avec des mots ou groupes de mots, séparés par des virgules.
             -Garder les mots ou expressions importantes de la question, sans les déformer.
             -Préfère des groupes de mots exacts plutôt que des mots isolés(ex.: "intelligence artificielle", pas de "intelligence, artificielle").
-            -Garder des éléments importants de la question (nom; concepts, objectifs) et les noms propres tels quels (organisations, acronymes, personnes).
+            -Garder des éléments importants de la question (nom, concepts, objectifs) et les noms propres tels quels (organisations, acronymes, personnes) si ils sont utiles.
 
             #ExempleQuestion : Qui est le président actuel de SpaceX ?
-            Requête : président actuel de SpaceX, SpaceX, Elon Musk, président 
+            Requête : président actuel de SpaceX, Elon Musk, président 
 
             #ExempleQuestion : Combien de personnes travaillent chez Google ?
-            Requête :effectifs chez Google, nombre d'employés
+            Requête :effectifs chez Google, nombre d'employés        
 
-            #ExempleQuestion : Quelle est l'organisation qui publie les actualités de la NASA ?
-            Requête :éditeur, actualités de la NASA
+            #ExempleQuestion : Localisation de Group Gamba ?
+            Requête :localisation, Group Gamba, adresse d'agence
+
+            #ExempleQuestion : c'est quoi l'IoU ?
+            Requête :IoU, Intersection over Union, définition, vision par ordinateur
 
             ======
             Question : {{$question}}

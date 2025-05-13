@@ -88,7 +88,15 @@ public class CustomPostgresConfig
     /// de similarité sémantique (vecteur) et de recherche plein texte.
     /// Plus la valeur est élevée, plus les éléments en bas du classement sont favorisés.
     /// </summary>
-    public int RrfK { get; set; } = 60;
+    public int Rrf_K_Vec { get; set; } = 60;
+
+    /// <summary>
+    /// Paramètre de pondération pour le classement RRF appliqué à la recherche en texte intégral (full-text).
+    /// Une valeur plus faible donne plus de poids aux résultats mieux classés.
+    /// Par défaut : 30
+    /// </summary>
+    public int Rrf_K_Text { get; set; } = 30;
+
 
     /// <summary>
     /// Active ou désactive la normalisation des scores avant la fusion.

@@ -187,7 +187,7 @@ public sealed class PostgresService : IMemoryDb, IDisposable, IAsyncDisposable
         bool withEmbeddings = true,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var records = GetHybridListAsync(index, text, minRelevance, limit, _config.RrfK, withEmbeddings,
+        var records = GetHybridListAsync(index, text, minRelevance, limit, _config.Rrf_K_Vec,_config.Rrf_K_Text, withEmbeddings,
             _config.UserNormalization);
         await foreach ((MemoryRecord record, double score) in records)
             yield return (record, score);
@@ -201,7 +201,8 @@ public sealed class PostgresService : IMemoryDb, IDisposable, IAsyncDisposable
         string text,
         double minRelevance = 0.0,
         int limit = 10,
-        int rrfK = 60,
+        int rrf_K_vec = 60,
+        int rrf_K_text = 30,
         bool withEmbeddings = false,
         bool useNormalization = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -217,7 +218,8 @@ public sealed class PostgresService : IMemoryDb, IDisposable, IAsyncDisposable
             index,
             target:vector,
             textQuery:text,
-            rrfK: rrfK,
+             rrf_K_vec = 60,
+            rrf_K_text = 30,
             limit:limit,
             withEmbeddings:withEmbeddings,
             useNormalization:useNormalization,

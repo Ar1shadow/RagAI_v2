@@ -504,14 +504,15 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
             }
         }
     }
-    
+
     /// <summary>
     /// Recherche hybride combinant la similarité vectorielle et la recherche plein texte.
     /// </summary>
     /// <param name="tableName">Nom de la table</param>
     /// <param name="target">Vecteur d'embedding pour la recherche sémantique</param>
     /// <param name="textQuery">Requête plein texte</param>
-    /// <param name="rrfK">Constante RRF pour la pondération des résultats</param>
+    /// <param name="rrf_K_vec">Constante RRF pour la pondération des résultats véctoriels</param>
+    /// <param name="rrf_K_vec">Constante RRF pour la pondération des résultats en texte</param>
     /// <param name="limit">Nombre maximum de résultats</param>
     /// <param name="withEmbeddings">Si avec embedding ou pas</param>>
     /// <param name="useNormalization">Si employer le stratégie de normalization</param>>
@@ -520,7 +521,8 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
         string tableName,
         Vector target,
         string textQuery,
-        int rrfK = 60,
+        int rrf_K_vec = 60,
+        int rrf_K_text = 30,
         int limit = 10,
         bool withEmbeddings = true,
         bool useNormalization = false,
@@ -577,8 +579,11 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
                                 COALESCE(v.{this._colPayload}, t.{this._colPayload}) AS {this._colPayload},
                                 COALESCE(v.{colVecScore}, 0) AS {colVecScore},
                                 COALESCE(t.{colTextScore}, 0) AS {colTextScore},
-                                (COALESCE(v.{colVecScore}, 0) / NULLIF(max_scores.max_vec, 0)) +
-                                (COALESCE(t.{colTextScore}, 0) / NULLIF(max_scores.max_text, 0)) AS {colRrfScore}
+                                COALESCE(
+                                    COALESCE((COALESCE(v.{colVecScore}, 0) / NULLIF(max_scores.max_vec, 0)),0) +
+                                    COALESCE((COALESCE(t.{colTextScore}, 0) / NULLIF(max_scores.max_text, 0)),0)
+                                    ,0) 
+                                AS {colRrfScore}
                             FROM vector_results v
                             FULL OUTER JOIN text_results t ON v.id = t.id
                             CROSS JOIN max_scores
@@ -612,8 +617,8 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
                                 COALESCE(v.{this._colPayload}, t.{this._colPayload}) AS {this._colPayload},
                                 COALESCE(v.{colVecScore}, 999) AS {colVecScore},
                                 COALESCE(t.{colTextScore}, 0) AS {colTextScore},
-                                (1.0 / (@rrfK + ROW_NUMBER() OVER (ORDER BY v.{colVecScore}))) +
-                                (1.0 / (@rrfK + ROW_NUMBER() OVER (ORDER BY t.{colTextScore} DESC))) AS {colRrfScore}
+                                COALESCE((1.0 / (@rrf_K_vec + ROW_NUMBER() OVER (ORDER BY v.{colVecScore}))),0) +
+                                COALESCE((1.0 / (@rrf_K_text + ROW_NUMBER() OVER (ORDER BY t.{colTextScore} DESC))),0) AS {colRrfScore}
                             FROM vector_results v
                             FULL OUTER JOIN text_results t ON v.id = t.id
                         )
@@ -625,7 +630,8 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
 
                 cmd.Parameters.AddWithValue("@embedding", target);
                 cmd.Parameters.AddWithValue("@query", textQuery);
-                cmd.Parameters.AddWithValue("@rrfK", rrfK);
+                cmd.Parameters.AddWithValue("@rrf_K_vec", rrf_K_vec);
+                cmd.Parameters.AddWithValue("@rrf_K_text", rrf_K_text);
                 cmd.Parameters.AddWithValue("@limit", limit);
 
                 // On collecte tous les résultats dans une liste pour pouvoir gérer l'annulation et les exceptions uniformément

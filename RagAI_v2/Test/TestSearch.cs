@@ -15,8 +15,6 @@ using RagAI_v2.Prompts;
 using RagAI_v2.SearchClient;
 using RagAI_v2.MemoryDataBase.Postgres;
 using RagAI_v2.Utils;
-using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
-using System;
 
 namespace RagAI_v2.Test
 {
@@ -62,7 +60,10 @@ namespace RagAI_v2.Test
                 .WithCustomPostgresMemoryDb(new CustomPostgresConfig()
                 {
                     ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
-                    TableNamePrefix = "test-"
+                    TableNamePrefix = "test-",
+                    UserNormalization = false,
+                    Rrf_K_Text = 60,
+                    Rrf_K_Vec = 60,
                 })
                 .WithCustomSearchClient<CustomSearchClient>()
                 .Build<MemoryServerless>();
@@ -97,12 +98,14 @@ namespace RagAI_v2.Test
             #region importation des document
             //ConsoleIO.WriteSystem("Supprimer les anciens fichiers");
             //var list = await memory.ListIndexesAsync();
+     
             //foreach (var index in list)
             //{
             //    ConsoleIO.WriteSystem($"Index : {index.Name}");
             //    await memory.DeleteIndexAsync(index.Name);
             //    ConsoleIO.WriteSystem($"Index {index.Name} supprimé");
             //}
+
 
             var sw = Stopwatch.StartNew();
             // charger document 
@@ -175,16 +178,17 @@ namespace RagAI_v2.Test
                             
                             if (!string.IsNullOrWhiteSpace(partition.Text))
                             {
-                                Console.WriteLine($"—— {partition.Text}-[score : {partition.Relevance}]");
+                                ConsoleIO.WriteSystem($"—— {partition.Text}\n-[score : {partition.Relevance}]\n");
                             }
                         }
                     }
                     Console.WriteLine();
                 }
                 Console.WriteLine();
-                var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, userInput);
+
+                //var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, userInput);
                 //Pour Tester
-                ConsoleIO.WriteSystem($"prompt: {prompt}");
+                //ConsoleIO.WriteSystem($"prompt: {prompt}");
 
                 //ConsoleIO.WriteAssistant();
                 //var response = new StringBuilder();

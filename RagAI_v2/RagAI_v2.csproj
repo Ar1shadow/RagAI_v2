@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <Folder Include="Assets\ChatHistory\" />
+      <Folder Include="Extensions\Python\model\" />
     </ItemGroup>
 
 </Project>
