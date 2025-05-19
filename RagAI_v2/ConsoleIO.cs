@@ -95,15 +95,29 @@ public static class ConsoleIO
     /// </summary>
     /// <param name="prompt"></param>
     /// <returns></returns>
-
     public static string Ask(string prompt) =>
         AnsiConsole.Prompt(new TextPrompt<string>($"[bold grey]{Markup.Escape(prompt)}[/]"));
-    
+
+    /// <summary>
+    /// Write a prompt to the console and return the input
+    /// </summary>
+    /// <param name="exception"></param>
     public static void Warning(string exception) =>
         AnsiConsole.MarkupLine("[bold red]WARNING:[/] " + Markup.Escape(exception));
+
+    /// <summary>
+    /// Write a error message to the console
+    /// </summary>
+    /// <param name="exception"></param>
     public static void Error(string exception) =>
-        AnsiConsole.MarkupLine("[bold blue]WARNING:[/] " + Markup.Escape(exception));
-    
+        AnsiConsole.MarkupLine("[bold blue]Error:[/] " + Markup.Escape(exception));
+
+    /// <summary>
+    /// Write a confirmation prompt to the console and return the input
+    /// </summary>
+    /// <param name="prompt"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static bool Confirm(string prompt, bool defaultValue = true)
     {
         return AnsiConsole.Confirm($"[bold grey]{Markup.Escape(prompt)}[/]", defaultValue);

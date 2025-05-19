@@ -8,6 +8,9 @@ using Microsoft.KernelMemory;
 using OllamaSharp.Models.Chat;
 using RagAI_v2.Prompts;
 using Microsoft.SemanticKernel;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System;
+using System.Diagnostics;
 
 namespace RagAI_v2.Cmd;
 
@@ -177,24 +180,31 @@ public class QueryCommand : ICommand
             return;
         }
         
+
         
+
         var question = string.Join(" ", args);
-        question = await UserQueryProcessor.ReformulerUserInput(question, _kernel);
-        ConsoleIO.WriteSystem(question);
-        var searchAnswer = await _memory.SearchAsync(question);
+        var sw_search = Stopwatch.StartNew();
+        var userInputRefined = await UserQueryProcessor.ReformulerUserInput(question, _kernel);
+        ConsoleIO.WriteSystem(userInputRefined);
+        var searchAnswer = await _memory.SearchAsync(userInputRefined);
         var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, question);
         //Pour Tester
         ConsoleIO.WriteSystem($"prompt: {prompt}");
+        ConsoleIO.WriteSystem($"--Recherche est fini à {sw_search.Elapsed} s");
+
         _history.AddUserMessage(prompt);
         ConsoleIO.WriteAssistant();
         var response = new StringBuilder();
 
+        var sw_answer = Stopwatch.StartNew();
         await foreach (var text in
                        _chatService.GetStreamingChatMessageContentsAsync(_history))
         {
             ConsoleIO.WriteAssistant(text);
             response.Append(text);
         }
+        ConsoleIO.WriteSystem($"--Reponse est générée à {sw_answer.Elapsed} s");
         _history.AddAssistantMessage(response.ToString());
     }
 }

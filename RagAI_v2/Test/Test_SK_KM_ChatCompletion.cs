@@ -10,7 +10,14 @@ using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using RagAI_v2.Extensions;
 using RagAI_v2.Prompts;
-using Microsoft.KernelMemory.Configuration;
+using RagAI_v2.Cmd;
+using RagAI_v2.Handlers;
+using RagAI_v2.SearchClient;
+using RagAI_v2.MemoryDataBase.Postgres;
+using RagAI_v2.Utils;
+using OllamaSharp;
+using DocumentFormat.OpenXml.Office2010.Word;
+
 
 namespace RagAI_v2.Test;
 // Test 1 : Modification de Prompt
@@ -19,7 +26,7 @@ namespace RagAI_v2.Test;
 public static class Test_SK_KM_ChatCompletion
 {
 #pragma warning disable SKEXP0070
-    public static async Task Run(CancellationToken token)
+    public static async Task Run()
     {
         CancellationTokenSource cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMinutes(100));
@@ -42,43 +49,60 @@ public static class Test_SK_KM_ChatCompletion
         var embedding = ConsoleIO.WriteSelection("Choisir un [yellow]Embedding Modèle[/] : ",
             config.GetSection("ChatModel:modelId").Get<List<string>>()!);
 
-        // Configuration de la base de données
-        var pgcfg = new PostgresConfig()
-        {
-            ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
-            TableNamePrefix = "test-"
-        };
 
-        // Etablir kernel memory
+
+        // Etablir kernel memory afin de activier le module de recherche
         var memory = new KernelMemoryBuilder()
+            .AddSingleton<PythonChunkService, PythonChunkService>()
             .WithOllamaTextGeneration(model)
             .WithOllamaTextEmbeddingGeneration(embedding)
             .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
-            .WithPostgresMemoryDb(pgcfg)
+            .WithPostgresMemoryDb(new PostgresConfig()
+            {
+                ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
+                TableNamePrefix = "test-"
+            })
             .WithSearchClientConfig(new SearchClientConfig()
             {
-                MaxMatchesCount = 3,
-                AnswerTokens = 500,
+                MaxMatchesCount = 5,
                 Temperature = 0.2,
                 TopP = 0.3
             })
-            .WithCustomTextPartitioningOptions(new TextPartitioningOptions()
+            .WithCustomPostgresMemoryDb(new CustomPostgresConfig()
             {
-                MaxTokensPerParagraph = 700,
-                OverlappingTokens = 200,
+                ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
+                TableNamePrefix = "test-",
+                UserNormalization = true,
             })
+            .WithCustomSearchClient<CustomSearchClient>()
             .Build<MemoryServerless>();
+        memory.Orchestrator.AddHandler<CustomTextParsingHandler>(CustomConstants.PipelineStepsParsing);
+        ConsoleIO.WriteSystem(" -- Kernel Memory est prêt");
 
+        //Etablir SK afin de activier le module de Chat
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddOllamaChatCompletion(
-            modelId: model,
-            endpoint: new Uri(config["ChatModel:endpoint"]!));
-        
+        kernelBuilder.Services.AddSingleton<HttpClient>(sp =>
+        {
+            var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromMinutes(20),
+                BaseAddress = new Uri("http://localhost:11434")
+            };
+            return client;
+        });
+        kernelBuilder.Services.AddSingleton<OllamaApiClient>(sp =>
+        {
+            var httpClient = sp.GetRequiredService<HttpClient>();
+            return new OllamaApiClient(httpClient, model!);
+        });
+
+        kernelBuilder.AddOllamaChatCompletion(
+                ollamaClient: null,
+                serviceId: null);
         var kernel = kernelBuilder.Build();
-      
 
-        #region Utiliser SearchAsync
 
+        #region Importation des documents
         var sw = Stopwatch.StartNew(); 
         // charger document 
         string[] files = Directory.GetFiles(config["MemoryDB:LocalFileStorage"])
@@ -99,44 +123,46 @@ public static class Test_SK_KM_ChatCompletion
             else
                 ConsoleIO.WriteSystem($" --Document ID :{documentID} déja importé");
         }
-        
-        //var searchAnswer = await memory.SearchAsync("what is NASA's projet");
-        //var prompt = SearchResultProcessor.FormatSearchResultPrompt(searchAnswer, "what is NASA's projet");
-        //ConsoleIO.WriteAssistant(prompt);
-        // Obtenir le ChatService de SK
-        
+        #endregion
+
+        #region Chat Loop
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var history = new ChatHistory(CustomTemplate.Rag.Prompt);
-        //history.LoadHistory(config["ChatHistoryReducer:Directory"]);
-       
+        var history = new ChatHistory(CustomTemplate.Chat.Prompt);
+        var router = new CommandRouter(config, history, memory, chatService, kernel);
+
         // Commencer Chat Loop
         var userInput = string.Empty;
         ConsoleIO.WriteTitre("Welcome to RagAI v2.0");
-        while (userInput != "exit")
+        ConsoleIO.WriteUser();
+        while (true)
         {
-            ConsoleIO.WriteUser();
             userInput = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(userInput)) continue;
+            if (Outils.IsCommand(userInput))
+            {
+                await router.HandleCommand(userInput);
+                ConsoleIO.WriteUser();
+                continue;
+            }
             
-            if (userInput == "exit") break;
+
             
-            var search = await memory.SearchAsync(userInput);
-            var prompt = SearchResultProcessor.FormatSearchResultPrompt(search, userInput);
-            ConsoleIO.WriteSystem(prompt);
-            history.AddUserMessage(prompt);
             ConsoleIO.WriteAssistant();
             var response = new StringBuilder();
 
+            var sw_answer = Stopwatch.StartNew();
             await foreach (var text in
                            chatService.GetStreamingChatMessageContentsAsync(history,cancellationToken: cts.Token))
             {
                 ConsoleIO.WriteAssistant(text);
                 response.Append(text);
             }
+            ConsoleIO.WriteSystem($"--Reponse est générée à {sw_answer.Elapsed} s");
             history.AddAssistantMessage(response.ToString());
+            ConsoleIO.WriteUser();
         }
         
-        history.SaveHistory(config["ChatHistoryReducer:Directory"]);
+     
         #endregion
 
     }

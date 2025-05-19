@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -24,7 +25,8 @@ internal static class UserQueryProcessor
         (var think, var answer) = SplitReasoning(query);
         if (!string.IsNullOrEmpty(think))
             ConsoleIO.WriteSystem($"Think par LLM : {think}\n\n");
-        return answer;
+        string decodedAnswer = WebUtility.HtmlDecode(answer);
+        return decodedAnswer;
     }
     private static (string Think, string Answer) SplitReasoning(string text)
     {

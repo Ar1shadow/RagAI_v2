@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
+using RagAI_v2.Utils;
 
 
 namespace RagAI_v2.Extensions
@@ -11,6 +12,69 @@ namespace RagAI_v2.Extensions
     /// </summary>
     public static class JsonConfigurationExtensions
     {
+
+
+        public static IConfigurationBuilder ConfigureInteractiveSettings(this IConfigurationBuilder builder, string setteingPath)
+        {
+            ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+            var appSettingsPath = Path.Combine(AppPaths.Root, setteingPath);
+            if (!File.Exists(appSettingsPath))
+            {
+                throw new FileNotFoundException($"Le fichier de configuration {appSettingsPath} n'existe pas !");
+            }
+            try
+            {
+                string json = File.ReadAllText(appSettingsPath);
+                var jsonObject = JsonNode.Parse(json) ?? new JsonObject();
+
+                //Configurer le chemin de stockage de l'historique
+                string? historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut] ").Trim() ?? Path.Combine(AppPaths.HistoryDir, "history.json");
+                while (!Path.Exists(historyPath))
+                {
+                    ConsoleIO.Error($"Le chemin {historyPath} n'existe pas. Veuillez entrer un chemin valide.");
+                    historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut]: ").Trim() ?? Path.Combine(AppPaths.HistoryDir, "history.json");
+                }
+                jsonObject["ChatHistory"] ??= new JsonObject();
+                jsonObject["ChatHistory"]!["historyPath"] = historyPath;
+
+                //Configurer le chemin de stockage des fichiers
+                string? localFileStorage = ConsoleIO.Ask("Entrez le chemin vers le dossier contenant les fichiers à importer dans la base de données: ").Trim();
+                while (!Path.Exists(localFileStorage))
+                {
+                    ConsoleIO.Error($"Le chemin {localFileStorage} n'existe pas. Veuillez entrer un chemin valide.");
+                    localFileStorage = ConsoleIO.Ask("Entrez le chemin vers le dossier contenant les fichiers à importer dans la base de données: ").Trim();
+                }
+                jsonObject["MemoryDB"] ??= new JsonObject();
+                jsonObject["MemoryDB"]!["LocalFileStorage"] = localFileStorage;
+
+                //Configurer la connexion à la base de données
+                ConsoleIO.WriteSystem("Entrez la configuration de la chaîne de connexion pour PostgresSQL: ");
+                string? Host = ConsoleIO.Ask("Entrez le nom d'hôte de la base de données [Espace pour utiliser le défaut : localhost]: ").Trim() ?? "localhost";
+                string? Port = ConsoleIO.Ask("Entrez le port de la base de données [Espace pour utiliser le défaut : 5432]: ").Trim() ?? "5432";
+                string? User = ConsoleIO.Ask("Entrez le nom d'utilisateur de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
+                string? Password = ConsoleIO.Ask("Entrez le mot de passe de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
+                string? Database = ConsoleIO.Ask("Entrez le nom de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
+                string? ConnectionString = $"Host={Host};Port={Port};Username={User};Password={Password};Database={Database}";
+                jsonObject["MemoryDB"]!["Postgres"] ??= new JsonObject();
+                jsonObject["MemoryDB"]!["Postgres"]!["ConnectionString"] = ConnectionString;
+
+                // Sauvegarder le fichier JSON mis à jour
+                File.WriteAllText(appSettingsPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+                ConsoleIO.WriteSystem($"Configuration interactive terminée. Le fichier de configuration a été mis à jour avec succès dans {appSettingsPath}");
+
+                return builder;
+            }
+            catch (Exception ex)
+            {
+                // Log any errors that occur during the save process.
+                
+                throw new Exception($"Échec de la mise à jour de appsettings.json : {ex.Message}");
+            }
+            
+        }
+
+
+
         /// <summary>
         /// Méthode d'extension : met automatiquement à jour "ChatModel.modelId" dans appsettings.json
         /// </summary>
@@ -20,7 +84,7 @@ namespace RagAI_v2.Extensions
         {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
             
-            var appSettingsPath = Path.Combine(AppContext.BaseDirectory, appSettings);
+            var appSettingsPath = Path.Combine(AppPaths.Root, appSettings);
             //Console.WriteLine(appSettingsPath); 
             if (!File.Exists(appSettingsPath))
             {
@@ -37,7 +101,7 @@ namespace RagAI_v2.Extensions
             }
 
             // 2. Mettre à jour le fichier appsettings.json
-            UpdateAppSettings(appSettingsPath, models);
+            UpdateAppSettingsOllama(appSettingsPath, models);
             return builder;
         }
 
@@ -93,7 +157,7 @@ namespace RagAI_v2.Extensions
         /// <summary>
         /// Lit et met à jour appsettings.json avec les modèles récupérés
         /// </summary>
-        private static void UpdateAppSettings(string filePath, List<string> models)
+        private static void UpdateAppSettingsOllama(string filePath, List<string> models)
         {
             try
             {

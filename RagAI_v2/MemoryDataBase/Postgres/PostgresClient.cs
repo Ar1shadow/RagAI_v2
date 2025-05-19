@@ -557,13 +557,13 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
                             SELECT {columns}, 1 - ({this._colEmbedding} <=> @embedding) AS {colVecScore}
                             FROM {tableName}
                             ORDER BY {colVecScore} DESC
-                            LIMIT @limit
+                            LIMIT @internal_limit
                         ),
                         text_results AS (
                             SELECT {columns}, ts_rank_cd(to_tsvector('french', {this._colContent}), plainto_tsquery('french', @query), 1) AS {colTextScore}
                             FROM {tableName}
                             WHERE to_tsvector('french', {this._colContent}) @@ plainto_tsquery('french', @query)
-                            LIMIT @limit
+                            LIMIT @internal_limit
                         ),
                         max_scores AS (
                             SELECT 
@@ -600,13 +600,13 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
                             SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colVecScore}
                             FROM {tableName}
                             ORDER BY {colVecScore}
-                            LIMIT @limit
+                            LIMIT @internal_limit
                         ),
                         text_results AS (
                             SELECT {columns}, ts_rank_cd(to_tsvector('french', {this._colContent}), plainto_tsquery('french', @query)) AS {colTextScore}
                             FROM {tableName}
                             WHERE to_tsvector('french', {this._colContent}) @@ plainto_tsquery('french', @query)
-                            LIMIT @limit
+                            LIMIT @internal_limit
                         ),
                         fusion AS (
                             SELECT DISTINCT ON (COALESCE(v.id, t.id))
@@ -627,12 +627,17 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
                         LIMIT @limit;
                             ";
                 }
+                int multiple = 3;
+                int internal_limit = limit * multiple;
+                
 
                 cmd.Parameters.AddWithValue("@embedding", target);
                 cmd.Parameters.AddWithValue("@query", textQuery);
                 cmd.Parameters.AddWithValue("@rrf_K_vec", rrf_K_vec);
                 cmd.Parameters.AddWithValue("@rrf_K_text", rrf_K_text);
                 cmd.Parameters.AddWithValue("@limit", limit);
+                cmd.Parameters.AddWithValue("@internal_limit", internal_limit);
+                
 
                 // On collecte tous les résultats dans une liste pour pouvoir gérer l'annulation et les exceptions uniformément
                 var result = new List<(PostgresMemoryRecord record, double score)>();

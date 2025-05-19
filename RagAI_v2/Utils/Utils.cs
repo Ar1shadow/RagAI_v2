@@ -17,7 +17,11 @@ public static class Outils
 
         return input.StartsWith('/');
     }
-    
+    /// <summary>
+    /// Calculer le hash SHA256 d'un fichier.
+    /// </summary>
+    /// <param name="binaryData"></param>
+    /// <returns></returns>
     public static string CalculateSHA256(this BinaryData binaryData)
     {
         byte[] byteArray = SHA256.HashData(binaryData.ToMemory().Span);
@@ -71,6 +75,8 @@ public static class Outils
         return ("", "Process not started");
     }
 
+
+
     #region Outils pour python
     /// <summary>
     /// 
@@ -88,8 +94,11 @@ public static class Outils
         
     };
     
+    
     /// <summary>
-    /// 
+    /// Met à jour pip et installe les packages Python nécessaires définis dans la liste <c>PythonPackages</c>.
+    /// Vérifie d'abord la présence de Python dans l'environnement, met à jour pip, puis installe chaque package
+    /// s'il n'est pas déjà présent. Affiche les messages de succès ou d'erreur pour chaque étape.
     /// </summary>
     public static void UpdatePipAndInstallPackages()
     {

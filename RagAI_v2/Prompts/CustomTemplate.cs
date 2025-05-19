@@ -19,29 +19,36 @@ public static class CustomTemplate
 
         public const string QueryRefinementPrompt =
             """
-            Ta tâche est de comprendre la question et de générer une liste de mots-clés utiles à la recherche vectorielle.
+            Ta tâche est d'extraire les mots ou expressions clés utiles à une recherche vectorielle à partir de la question fournie.
 
-            -N'inclus aucune traduction. Garde tous les mots dans la langue d'origine, même s'ils sont abrégés.
-            -Ne reformule pas la question. 
-            -Ne réponds pas directement. N'explique pas.
-            -Réponds uniquement avec des mots ou groupes de mots, séparés par des virgules.
-            -Garder les mots ou expressions importantes de la question, sans les déformer.
-            -Préfère des groupes de mots exacts plutôt que des mots isolés(ex.: "intelligence artificielle", pas de "intelligence, artificielle").
-            -Garder des éléments importants de la question (nom, concepts, objectifs) et les noms propres tels quels (organisations, acronymes, personnes) si ils sont utiles.
+            **Directives :**
+            - Identifiez 3 à 5 termes ou expressions clés qui résument la question.
+            - N'inclus aucune traduction. Garde les mots dans leur langue d'origine.
+            - Ne reformulez pas la question. Ne fournis pas de réponse ou d'explication.
+            - Garder les mots ou expressions clés de la question, sans les déformer.
+            - Garder les nom propres (organisation, personne), les acronymes et les abréviations tels qu'ils sont.
+            - Répondez uniquement avec des mots ou groupes de mots, séparés par des virgules.
+            - Préfèrez des expressions exactes (ex. : "intelligence artificielle") plutôt que des mots isolés.
+            - Évitez les mots génériques ou trop larges comme "information", "contenu", "données", "entreprise" sauf si présents explicitement dans la question.
+            - Ignorez toute généralisation implicite ou interprétation (ex. Ne expandez "Gourp gamba" à "Group de la musique").
+            
+            **Exemples :**
+            Question : Comment fonctionne la photosynthèse chez les plantes aquatique?
+            Requête : photosynthèse, plantes aquatiques, mécanisme de photosynthèse, milieu aquatique
 
-            #ExempleQuestion : Qui est le président actuel de SpaceX ?
-            Requête : président actuel de SpaceX, Elon Musk, président 
+            **Exemples :**
+            Question : Combien de personnes travaillent chez Group GAMBA ?
+            Requête : effectifs chez Group GAMBA, nombre d'employés
 
-            #ExempleQuestion : Combien de personnes travaillent chez Google ?
-            Requête :effectifs chez Google, nombre d'employés        
+            **Exemples :**
+            Question : Quelle la différence entre la fusion nucléaire et la  fission nucléaire ?
+            Requête : fusion nucléaire, fission nucléaire, réaction nucléaire, différence entre fusion et fission
 
-            #ExempleQuestion : Localisation de Group Gamba ?
-            Requête :localisation, Group Gamba, adresse d'agence
+            **Exemples :**
+            Question : c'est quoi l'IoU ?
+            Requête : IoU, Intersection over Union, métrique de vision par ordinateur
 
-            #ExempleQuestion : c'est quoi l'IoU ?
-            Requête :IoU, Intersection over Union, définition, vision par ordinateur
-
-            ======
+            =====
             Question : {{$question}}
             Requête :
             """;

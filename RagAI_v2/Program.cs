@@ -1,4 +1,4 @@
-﻿#define module_13
+﻿#define module_3
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -18,7 +18,7 @@ using RagAI_v2.Utils;
 
 #pragma warning disable SKEXP0070
 var config = new ConfigurationBuilder()
-    .SetBasePath(AppContext.BaseDirectory)
+    .SetBasePath(AppPaths.Root)
     .AddJsonFile("appsettings.json", optional: false)
     .UpdateChatModelConfig("appsettings.json")
     .Build();
@@ -35,7 +35,7 @@ await TestDB.Run();
 #endif
 
 #if module_3
-await Test_SK_KM_ChatCompletion.Run(cts.Token);
+await Test_SK_KM_ChatCompletion.Run();
 #endif
 
 #if module_4

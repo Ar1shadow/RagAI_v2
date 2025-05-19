@@ -240,9 +240,9 @@ namespace RagAI_v2.Test
                 {
                     ConnectionString = config["MemoryDB:Postgres:ConnectString"]!,
                     TableNamePrefix = "test-",
-                    UserNormalization = false,
+                    UserNormalization = true,
                     Rrf_K_Text = 30,
-                    Rrf_K_Vec = 30,
+                    Rrf_K_Vec = 50,
                 })
                 .WithCustomSearchClient<CustomSearchClient>()
                 .Build<MemoryServerless>();

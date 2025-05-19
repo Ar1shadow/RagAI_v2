@@ -1,7 +1,7 @@
 # RagAI_v2/Extensions/Python/DocLoader.py
 
 from pathlib import Path
-from typing import Iterable, Union, Dict, Optional, Iterator
+from typing import Iterable, Union, Dict, Optional, Iterator, List
 from docling.chunking import HybridChunker
 from docling.pipeline.simple_pipeline import SimplePipeline
 from langchain_docling import DoclingLoader
@@ -152,8 +152,9 @@ class DocLoaders:
             format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
         )
         _loader = DoclingLoader(self._file_paths,converter=doc_convertor, chunker=HybridChunker(tokenizer=self.tokenizer,max_tokens=self.MAX_Tokens, merge_peers=True,))
-        filter_documents = filter_complex_metadata(_loader.load())
-        return filter_documents
+        #filter_documents = filter_complex_metadata(_loader.load())
+        #return filter_documents
+        return _loader.load()
 
     # Traitement pour document Word (.docx)
     def __word_loader(self):
@@ -242,7 +243,22 @@ class DocLoaders:
                 return self.__text_loader__(file).load()
 
 
+def merge_chunks_by_headings(docs : list[Document])-> list[Document]:
+    from collections import defaultdict
+    """
+    Merge chunks by headings.
+    """
+    merged = defaultdict(list)
 
+    for doc in docs:
+        headings = doc.metadata.get("dl_meta", {}).get("headings", [])
+        heading = headings[0] if headings else "No_Heading"
+        merged[heading].append(doc.page_content)
+    merged_chunks = []
+  
+    for heading, contents in merged.items():
+       merged_chunks.append(Document(page_content="\n".join(contents), metadata={"heading": heading}))
+    return merged_chunks
 
 
 
