@@ -32,7 +32,7 @@ namespace RagAI_v2.Utils
         /// <summary>
         /// Chemin vers le répertoire local des modèles Huggingface (HF_HOME).
         /// </summary>
-        public static readonly string HuggingFaceModels = Path.Combine(Root, "Assets", "Models");
+        public static readonly string HuggingFaceModels = Path.Combine(Root, "Extension", "Python", "model");
 
         /// <summary>
         /// Chemin vers le script principal de lancement de l'API Python (run_server.py).

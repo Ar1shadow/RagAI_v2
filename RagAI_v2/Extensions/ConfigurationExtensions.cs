@@ -27,15 +27,25 @@ namespace RagAI_v2.Extensions
                 string json = File.ReadAllText(appSettingsPath);
                 var jsonObject = JsonNode.Parse(json) ?? new JsonObject();
 
+                if (jsonObject["ConfigStatus"] is JsonValue jsonNode && jsonNode.ToString() == "Configured")
+                {
+                    ConsoleIO.WriteSystem("La configuration a déjà été effectuée./nUtiliez la command -[/config] pour la modifier.");
+                    return builder;
+                }
+
+
+
                 //Configurer le chemin de stockage de l'historique
-                string? historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut] ").Trim() ?? Path.Combine(AppPaths.HistoryDir, "history.json");
+                string? historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut] ").Trim();
+                historyPath = string.IsNullOrWhiteSpace(historyPath) ? historyPath = AppPaths.HistoryDir : historyPath.Trim();
                 while (!Path.Exists(historyPath))
                 {
                     ConsoleIO.Error($"Le chemin {historyPath} n'existe pas. Veuillez entrer un chemin valide.");
-                    historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut]: ").Trim() ?? Path.Combine(AppPaths.HistoryDir, "history.json");
+                    historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut]: ");
+                    historyPath = string.IsNullOrWhiteSpace(historyPath) ? historyPath = AppPaths.HistoryDir : historyPath.Trim();
                 }
                 jsonObject["ChatHistory"] ??= new JsonObject();
-                jsonObject["ChatHistory"]!["historyPath"] = historyPath;
+                jsonObject["ChatHistory"]!["Directory"] = historyPath;
 
                 //Configurer le chemin de stockage des fichiers
                 string? localFileStorage = ConsoleIO.Ask("Entrez le chemin vers le dossier contenant les fichiers à importer dans la base de données: ").Trim();
@@ -49,16 +59,24 @@ namespace RagAI_v2.Extensions
 
                 //Configurer la connexion à la base de données
                 ConsoleIO.WriteSystem("Entrez la configuration de la chaîne de connexion pour PostgresSQL: ");
-                string? Host = ConsoleIO.Ask("Entrez le nom d'hôte de la base de données [Espace pour utiliser le défaut : localhost]: ").Trim() ?? "localhost";
-                string? Port = ConsoleIO.Ask("Entrez le port de la base de données [Espace pour utiliser le défaut : 5432]: ").Trim() ?? "5432";
-                string? User = ConsoleIO.Ask("Entrez le nom d'utilisateur de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
-                string? Password = ConsoleIO.Ask("Entrez le mot de passe de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
-                string? Database = ConsoleIO.Ask("Entrez le nom de la base de données [Espace pour utiliser le défaut : postgres]: ").Trim() ?? "postgres";
+                string? Host = ConsoleIO.Ask("Entrez le nom d'hôte de la base de données [Espace pour utiliser le défaut : localhost]: ");
+                string? Port = ConsoleIO.Ask("Entrez le port de la base de données [Espace pour utiliser le défaut : 5432]: ");
+                string? User = ConsoleIO.Ask("Entrez le nom d'utilisateur de la base de données [Espace pour utiliser le défaut : postgres]: ");
+                string? Password = ConsoleIO.Ask("Entrez le mot de passe de la base de données [Espace pour utiliser le défaut : null]: ");
+                string? Database = ConsoleIO.Ask("Entrez le nom de la base de données [Espace pour utiliser le défaut : postgres]: ");
+                Host = string.IsNullOrWhiteSpace(Host) ? Host = "localhost" : Host.Trim();
+                Port = string.IsNullOrWhiteSpace(Port) ? Port = "5432" : Port.Trim();
+                User = string.IsNullOrWhiteSpace(User) ? User = "postgres" : User.Trim();
+                Password = string.IsNullOrWhiteSpace(Password) ? Password = "" : Password.Trim();
+                Database = string.IsNullOrWhiteSpace(Database) ? Database = "postgres" : Database.Trim();
+
+
                 string? ConnectionString = $"Host={Host};Port={Port};Username={User};Password={Password};Database={Database}";
                 jsonObject["MemoryDB"]!["Postgres"] ??= new JsonObject();
-                jsonObject["MemoryDB"]!["Postgres"]!["ConnectionString"] = ConnectionString;
+                jsonObject["MemoryDB"]!["Postgres"]!["ConnectString"] = ConnectionString;
 
                 // Sauvegarder le fichier JSON mis à jour
+                jsonObject["ConfigStatus"] = "Configured";
                 File.WriteAllText(appSettingsPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
                 ConsoleIO.WriteSystem($"Configuration interactive terminée. Le fichier de configuration a été mis à jour avec succès dans {appSettingsPath}");
 

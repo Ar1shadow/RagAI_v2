@@ -37,6 +37,7 @@ public static class Test_SK_KM_ChatCompletion
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
             .UpdateChatModelConfig("appsettings.json")
+            .ConfigureInteractiveSettings("appsettings.json")
             .Build();
 
         ConsoleIO.WriteTitre("Welcome to RagAI v2.0");

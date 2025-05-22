@@ -1,5 +1,6 @@
-
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagAI_v2.Extensions;
 using RagAI_v2.Interface;
@@ -11,6 +12,7 @@ using Microsoft.SemanticKernel;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Diagnostics;
+using RagAI_v2.Utils;
 
 namespace RagAI_v2.Cmd;
 
@@ -181,8 +183,6 @@ public class QueryCommand : ICommand
         }
         
 
-        
-
         var question = string.Join(" ", args);
         var sw_search = Stopwatch.StartNew();
         var userInputRefined = await UserQueryProcessor.ReformulerUserInput(question, _kernel);
@@ -206,6 +206,130 @@ public class QueryCommand : ICommand
         }
         ConsoleIO.WriteSystem($"--Reponse est générée à {sw_answer.Elapsed} s");
         _history.AddAssistantMessage(response.ToString());
+    }
+}
+
+
+public class  ModifyConfigSettingsCommand : ICommand
+{
+    private readonly string _appSettingsPath;
+    /// <summary>
+    /// Constructeur pour la commande de modification de la configuration
+    /// </summary>
+    /// <param name="FileName">le nom du fichier de configuration est appsettings obligatoirement</param>
+    public ModifyConfigSettingsCommand(string FileName)
+    {
+        _appSettingsPath = Path.Combine(AppPaths.Root, FileName);
+    }
+
+    public string Name => "config";
+    public string Description => "Modifier la configuration de l'application";
+    public string Usage => "/config";
+
+    
+    private void UpdateAppSettings()
+    {
+        if (!File.Exists(_appSettingsPath))
+        {
+            ConsoleIO.Error($"Le fichier de configuration {_appSettingsPath} n'existe pas !");
+            return;
+        } 
+        string json = File.ReadAllText(_appSettingsPath);
+        var root = JsonNode.Parse(json) ?? new JsonObject();
+
+        List <string> menu = new()
+        {
+            { "le chemin de l'historique" },
+            { "le chemin de stockage des fichiers" },
+            { "la chaîne de connexion à la base de données" },
+            { "Quitter" }
+        };
+        while (true)
+        {
+            var champ = ConsoleIO.WriteSelection("Selectionnez le champ à modifier", menu);
+            if (champ == "Quitter") break;
+
+            string? newValue = null;
+            switch (champ)
+            {
+                case "le chemin de l'historique":
+                    newValue = ConsoleIO.Ask("Entrez le nouveau chemin pour le stockage de l'historique : ");
+                    if (string.IsNullOrWhiteSpace(newValue))
+                    {
+                        ConsoleIO.Error("Valeur vide, veuillez réessayer.");
+                        continue;
+                    }
+                    if (!Path.Exists(newValue))
+                    {
+                        ConsoleIO.Error($"Le chemin {newValue} n'existe pas. Veuillez entrer un chemin valide.");
+                        continue;
+                    }
+                    root["ChatHistory"] ??= new JsonObject();
+                    root["ChatHistory"]!["Directory"] = newValue;
+                    break;
+
+                case "le chemin de stockage des fichiers":
+                    newValue = ConsoleIO.Ask("Entrez le nouveau chemin vers le dossier contenant les fichiers à importer dans la base de données : ");
+
+                    if (string.IsNullOrWhiteSpace(newValue))
+                    {
+                        ConsoleIO.Error("Valeur vide, veuillez réessayer.");
+                        continue;
+                    }
+                    if (!File.Exists(newValue))
+                    {
+                        ConsoleIO.Error($"Le chemin {newValue} n'existe pas. Veuillez entrer un chemin valide.");
+                        continue;
+                    }
+
+                    root["MemoryDB"] ??= new JsonObject();
+                    root["MemoryDB"]!["LocalFileStorage"] = newValue;   
+                    break;
+
+                case "la chaîne de connexion à la base de données":
+                    string? Host = ConsoleIO.Ask("Entrez le nom d'hôte de la base de données [Espace pour utiliser le défaut : localhost]: ");
+                    string? Port = ConsoleIO.Ask("Entrez le port de la base de données [Espace pour utiliser le défaut : 5432]: ");
+                    string? User = ConsoleIO.Ask("Entrez le nom d'utilisateur de la base de données [Espace pour utiliser le défaut : postgres]: ");
+                    string? Password = ConsoleIO.Ask("Entrez le mot de passe de la base de données [Espace pour utiliser le défaut : null]: ");
+                    string? Database = ConsoleIO.Ask("Entrez le nom de la base de données [Espace pour utiliser le défaut : postgres]: ");
+                    Host = string.IsNullOrWhiteSpace(Host) ? Host = "localhost" : Host.Trim();
+                    Port = string.IsNullOrWhiteSpace(Port) ? Port = "5432" : Port.Trim();
+                    User = string.IsNullOrWhiteSpace(User) ? User = "postgres" : User.Trim();
+                    Password = string.IsNullOrWhiteSpace(Password) ? Password = "" : Password.Trim();
+                    Database = string.IsNullOrWhiteSpace(Database) ? Database = "postgres" : Database.Trim();
+
+                    string? ConnectionString = $"Host={Host};Port={Port};Username={User};Password={Password};Database={Database}";
+                    root["MemoryDB"] ??= new JsonObject();
+                    root["MemoryDB"]!["Postgres"] ??= new JsonObject();
+                    root["MemoryDB"]!["Postgres"]!["ConnectString"] = ConnectionString;
+                    break;
+
+                default:
+                    ConsoleIO.Error("Champ non reconnu.");
+                    break;
+            }
+
+           
+        }
+        File.WriteAllText(_appSettingsPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        ConsoleIO.WriteSystem($"Le fichier de configuration a été mis à jour avec succès : {_appSettingsPath}");
+    }
+
+
+    public Task Execute(string[] args)
+    {
+        if (args.Length > 0)
+        {
+            ConsoleIO.Warning("Trop de paramètres pour la commande config.");
+
+        }
+        else
+        {
+            ConsoleIO.WriteSystem("Configuration de l'application :");
+            UpdateAppSettings();
+        }
+
+            return Task.CompletedTask;
     }
 }
 
@@ -297,8 +421,8 @@ public class CommandRouter
             new SaveCommand(history,config["ChatHistory:Directory"]??String.Empty),
             new ExitCommand(),
             new DeleteCommand(history,config["ChatHistory:Directory"]??String.Empty),
-            new QueryCommand(history:history,memory:memory,config:config, chatService:chatService, kernel)
-            
+            new QueryCommand(history:history,memory:memory,config:config, chatService:chatService, kernel),
+            new ModifyConfigSettingsCommand("appsettings.json")
         };
         _commands = commandList.ToDictionary(cmd => cmd.Name);
         

@@ -96,7 +96,7 @@ public static class ConsoleIO
     /// <param name="prompt"></param>
     /// <returns></returns>
     public static string Ask(string prompt) =>
-        AnsiConsole.Prompt(new TextPrompt<string>($"[bold grey]{Markup.Escape(prompt)}[/]"));
+        AnsiConsole.Prompt(new TextPrompt<string>($"[bold grey]{Markup.Escape(prompt)}[/]").AllowEmpty());
 
     /// <summary>
     /// Write a prompt to the console and return the input
