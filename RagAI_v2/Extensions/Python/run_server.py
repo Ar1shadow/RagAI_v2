@@ -1,5 +1,8 @@
 # RagAI_v2/Extensions/Python/run_server.py
 
+import socket
+import subprocess
+from transformers.utils.import_utils import is_pandas_available
 import uvicorn
 import signal
 import asyncio
@@ -46,8 +49,8 @@ async def start_server(server, stop_event):
     print("Serveur arrêté proprement.")
 
 
+
 if __name__ == "__main__":
-    # chemin pour test temporaire utiliser un fichier de config ou un chemin relatif
-    #os.environ["HF_HOME"] = "Z:\\Stagiaires\\Pengcheng LI\\Code\\RagAI_v2\\RagAI_v2\\Assets\\Models\\"
+    print("Application de patchs...")   
     MonkeyPatch.apply_patch()
     run_uvicorn()

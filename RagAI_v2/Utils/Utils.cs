@@ -1,11 +1,96 @@
 using System.Security.Cryptography;
 using Microsoft.KernelMemory.Pipeline;
+using System.Net;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace RagAI_v2.Utils;
 
 public static class Outils
 {
+
+    public static bool IsPortUse(int port)
+    {
+        try
+        {
+            TcpListener listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+            listener.Stop();
+            return false; // Port est libre
+        }
+        catch (SocketException)
+        {
+            return true; // Port est déjà utilisé
+        }
+    }
+
+    public static void KillProcessByPort(int port)
+    {
+        string arg = "/c netstat -ano | findstr :" + port;
+        Process process = new Process()
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = arg,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        var pids = new HashSet<int>();
+        foreach (var line in output.Split( new char[]{ '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (line.Contains("LISTENING"))
+            {
+                var parts = Regex.Split(line.Trim(), @"\s+");
+                if (parts.Length > 4 && int.TryParse(parts[^1], out int pid))
+                {
+                    pids.Add(pid);
+                }
+
+            }
+        }
+
+        foreach (var pid in pids)
+        {
+            try
+            {
+                var p = Process.GetProcessById(pid);
+                p.Kill();
+                p.WaitForExit(5000);
+                if (!p.HasExited)
+                {
+                    var kill = new Process()
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "cmd.exe",
+                            Arguments = $"/c taskkill /PID {pid} /F",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                        }
+                    };
+                    kill.Start();
+                    kill.WaitForExit(3000);
+
+                }
+                ConsoleIO.WriteSystem($"Process {pid} killed successfully.");
+            }
+            catch (Exception ex)
+            {
+                ConsoleIO.Error($"Failed to kill process {pid}: {ex.Message}");
+            }
+
+        } 
+    }
+
     /// <summary>
     /// Check if the input is a command
     /// </summary>

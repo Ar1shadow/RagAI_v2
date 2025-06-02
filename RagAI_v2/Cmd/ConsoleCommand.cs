@@ -9,8 +9,6 @@ using Microsoft.KernelMemory;
 using OllamaSharp.Models.Chat;
 using RagAI_v2.Prompts;
 using Microsoft.SemanticKernel;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System;
 using System.Diagnostics;
 using RagAI_v2.Utils;
 
@@ -24,7 +22,7 @@ namespace RagAI_v2.Cmd;
 
 public class LoadCommand : ICommand
 {
-    private readonly Microsoft.SemanticKernel.ChatCompletion.ChatHistory _history;
+    private readonly ChatHistory _history;
     private readonly string _historyDirectory;
     //ctor
     public LoadCommand(ChatHistory history, string historyDirectory)

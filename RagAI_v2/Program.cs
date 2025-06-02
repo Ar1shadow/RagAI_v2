@@ -17,12 +17,7 @@ using RagAI_v2.Utils;
 
 
 #pragma warning disable SKEXP0070
-var config = new ConfigurationBuilder()
-    .SetBasePath(AppPaths.Root)
-    .AddJsonFile("appsettings.json", optional: false)
-    .UpdateChatModelConfig("appsettings.json")
-    .Build();
-Console.WriteLine(AppPaths.Root);
+
 
 #if module_1
 #pragma warning disable KMEXP00

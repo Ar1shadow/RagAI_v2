@@ -33,6 +33,7 @@ class MimeTypesDetection:
             "application/vnd.ms-excel",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "text/plain",
+            "text/html",
         }
 
         # Extension de fichiers mappées aux types MIME
@@ -239,6 +240,7 @@ class DocLoaders:
                 return self.__md_loader()
             if _type == "application/vnd.ms-excel" or _type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" or _type == "text/html":
                 return self.__general_loader__()
+
             if _type == "text/plain":
                 return self.__text_loader__(file).load()
 

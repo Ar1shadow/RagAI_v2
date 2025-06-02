@@ -31,6 +31,12 @@ public static class Test_SK_KM_ChatCompletion
         CancellationTokenSource cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMinutes(100));
 
+        //libérer le port 8000 si il est utilisé
+        if (Outils.IsPortUse(8000))
+        {
+            ConsoleIO.WriteSystem("Port 8000 est déjà utilisé, on va le libérer");
+            Outils.KillProcessByPort(8000);
+        }
 
         // Ajouter le fichier de Config à environnement
         var config = new ConfigurationBuilder()
@@ -117,7 +123,7 @@ public static class Test_SK_KM_ChatCompletion
                 var id = await memory.ImportDocumentAsync(
                     file, 
                     documentId: documentID, 
-                    steps: CustomConstants.PipelineRagWithoutLocalFiles);
+                    steps: CustomConstants.PipelineCustomParsing);
                 ConsoleIO.WriteSystem($" --Document ID :{documentID} importé à {sw.Elapsed} s");
                 sw.Restart();
             }

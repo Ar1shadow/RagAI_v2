@@ -71,6 +71,6 @@ public static class CustomConstants
 
     public static readonly string[] PipelineCustomParsing =
  [
-     PipelineStepsParsing, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+     PipelineStepsParsing, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords, PipelineStepsDeleteGeneratedFiles
  ];
 }

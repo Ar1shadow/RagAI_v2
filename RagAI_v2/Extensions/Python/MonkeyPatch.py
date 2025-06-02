@@ -1,5 +1,5 @@
 #patch_transformers.py
-
+# -*- coding: utf-8 -*-
 import os
 
 
@@ -21,7 +21,7 @@ def apply_patch():
         def patched(model_id, *args, **kwargs):
             local_path = LOCAL_MODEL.get(model_id)
             if local_path :
-                print(f"[patch]Rédiriger {model_id} vers {local_path}")
+                print(f"[patch]Rediriger {model_id} vers {local_path}")
                 model_id = local_path
                 kwargs.setdefault("local_files_only", True)
             return origin_fn(model_id, *args, **kwargs)
