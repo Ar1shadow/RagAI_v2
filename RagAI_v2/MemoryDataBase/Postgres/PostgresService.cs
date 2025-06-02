@@ -20,6 +20,7 @@ namespace RagAI_v2.MemoryDataBase.Postgres;
 
 /// <summary>
 /// Postgres connector for Kernel Memory.
+/// Connecteur Postgres pour Kernel Memory.
 /// </summary>
 
 public sealed class PostgresService : IMemoryDb, IDisposable, IAsyncDisposable

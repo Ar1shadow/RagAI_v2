@@ -7,21 +7,22 @@ using System.Collections.Generic;
 using Microsoft.KernelMemory;
 using System.Collections.Concurrent;
 
+
 public static class SearchResultProcessor
-{  
+{
     /// <summary>
-    /// Format search result prompt
+    /// Formate le prompt de résultat de recherche pour l'IA.
     /// </summary>
-    /// <param name="searchResult"></param>
-    /// <param name="userQuestion"></param>
-    /// <param name="prompt"></param>>
+    /// <param name="searchResult">List d'enregistrements obtenus</param>
+    /// <param name="userQuestion">Question d'utilisateur</param>
+    /// <param name="prompt">Prompt pour RAG</param>>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public static string FormatSearchResultPrompt(
         SearchResult? searchResult, 
         string? userQuestion, 
-        string? prompt = CustomTemplate.Rag.SimplePrompt)
+        string? prompt = CustomTemplate.Rag.Prompt)
     {
         if (searchResult == null)
             ArgumentNullException.ThrowIfNull(searchResult);
@@ -60,16 +61,16 @@ public static class SearchResultProcessor
         }
         else
         {
-            promptBuilder.AppendLine("No results found.");
+            promptBuilder.AppendLine("Aucun result trouvé.");
         }
 
         return promptBuilder.ToString();
     }
-    
+
     /// <summary>
-    /// Clean text by removing empty lines and trimming each line
+    /// Nettoie le texte en supprimant les lignes vides et en coupant chaque ligne
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="text">Text à nettoyer</param>
     /// <returns></returns>
     private static string CleanText(string text)
     {
@@ -78,7 +79,7 @@ public static class SearchResultProcessor
             return string.Empty;
         }
 
-        // Split text into lines, remove empty lines, and trim each line
+        // Découper le texte en lignes, supprimer les lignes vides et couper chaque ligne
         var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None)
                         .Select(line => line.Trim());
 

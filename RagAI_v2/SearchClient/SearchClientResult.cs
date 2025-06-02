@@ -16,6 +16,10 @@ internal enum SearchState
     Stop = 2
 }
 
+
+/// <summary>
+/// Schema de résultat du client de recherche.
+/// </summary>
 internal class SearchClientResult
 {
     public SearchMode Mode { get; private init; }

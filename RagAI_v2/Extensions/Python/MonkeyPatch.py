@@ -1,7 +1,7 @@
 #patch_transformers.py
-
 import os
 
+#Méthode pour patcher les modèles de transformers afin de charger les modèles locaux
 
 def apply_patch():
 

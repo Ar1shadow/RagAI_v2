@@ -6,11 +6,8 @@ using RagAI_v2.Extensions;
 using RagAI_v2.Interface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
-using OllamaSharp.Models.Chat;
 using RagAI_v2.Prompts;
 using Microsoft.SemanticKernel;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System;
 using System.Diagnostics;
 using RagAI_v2.Utils;
 
@@ -22,9 +19,14 @@ namespace RagAI_v2.Cmd;
 /// Router est un contenant de Commands, utiliser la méthode RegisterCommand pour enregistrer les commandes. 
 /// </summary>
 
+
+///<summary>
+///Charger l'historique de conversation depuis un fichier ou un répertoire spécifié.
+///</summary>
+
 public class LoadCommand : ICommand
 {
-    private readonly Microsoft.SemanticKernel.ChatCompletion.ChatHistory _history;
+    private readonly ChatHistory _history;
     private readonly string _historyDirectory;
     //ctor
     public LoadCommand(ChatHistory history, string historyDirectory)
@@ -59,6 +61,10 @@ public class LoadCommand : ICommand
     }
 }
 
+
+/// <summary>
+/// Command qui permet de sauvegarder l'historique de conversation dans un fichier spécifié.
+/// </summary>
 public class SaveCommand : ICommand
 {
     private readonly ChatHistory _history;
@@ -93,7 +99,9 @@ public class SaveCommand : ICommand
 }
 
 
-
+/// <summary>
+/// Command qui permet de supprimer l'historique de conversation ou un fichier spécifique.
+/// </summary>
 public class DeleteCommand : ICommand
 {
     private readonly ChatHistory _history;
@@ -138,7 +146,7 @@ public class ExitCommand : ICommand
 }
 
 /// <summary>
-/// Répondre la question en fonction du RAG
+/// Command qui permet de répondre la question en utilisant RAG
 /// </summary>
 public class QueryCommand : ICommand
 {
@@ -209,7 +217,9 @@ public class QueryCommand : ICommand
     }
 }
 
-
+/// <summary>
+/// Command qui permet de modifier la configuration de l'application (fichier appsetting.json).
+/// </summary>
 public class  ModifyConfigSettingsCommand : ICommand
 {
     private readonly string _appSettingsPath;
@@ -346,7 +356,7 @@ public class HelpCommand : ICommand
     public string Name => "help";
     public IEnumerable<string> Aliases => new[] { "h", "?", "aide" };
     public string Description => "Afficher la liste des commandes disponibles. ";
-    public string Usage => "/help [command]. Utilisez \"/help <command>\" pour plus d’informations sur une commande.";
+    public string Usage => "/help [command].\n Utilisez \"/help <command>\" pour plus d’informations sur une commande.";
 
     public Task Execute(string[] args)
     {

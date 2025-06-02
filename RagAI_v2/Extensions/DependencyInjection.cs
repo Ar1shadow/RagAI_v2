@@ -9,12 +9,14 @@ using CustomPostgresConfig = RagAI_v2.MemoryDataBase.Postgres.CustomPostgresConf
 namespace RagAI_v2.Extensions;
 
 /// <summary>
+/// Extension de constructeur de Kernel Memory pour ajouter le connecteur Postgres en tant que base de données mémoire.
 /// Kernel Memory builder extensions
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
     /// Kernel Memory Builder extension method to add Postgres memory connector.
+    /// Méthode d'extension du Kernel Memory Builder pour ajouter le connecteur mémoire Postgres.
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="config">Postgres configuration</param>
@@ -26,6 +28,7 @@ public static partial class KernelMemoryBuilderExtensions
 
     /// <summary>
     /// Kernel Memory Builder extension method to add Postgres memory connector.
+    /// Méthode d'extension du Kernel Memory Builder pour ajouter le connecteur mémoire Postgres.
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="connString">Postgres connection string</param>
@@ -43,6 +46,7 @@ public static partial class DependencyInjection
 {
     /// <summary>
     /// Inject Postgres as the default implementation of IMemoryDb
+    /// Injecte Postgres comme implémentation par défaut de IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="config">Postgres configuration</param>
@@ -55,6 +59,7 @@ public static partial class DependencyInjection
 
     /// <summary>
     /// Inject Postgres as the default implementation of IMemoryDb
+    /// Injecte Postgres comme implémentation par défaut de IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="connString">Postgres connection string</param>

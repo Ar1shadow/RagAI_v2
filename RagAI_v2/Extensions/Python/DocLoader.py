@@ -108,7 +108,9 @@ class MimeTypesDetection:
 
 
 
-# Chargeur de documents intelligent selon le type MIME détecté
+# Chargeur intelligent de documents selon le type MIME détecté
+# Si une nouvelle type à ajouter, il faut ajouter la méthode de chargement correspondante, support_type dans MimeTypesDetection
+# et la méthode load dans DocLoaders
 class DocLoaders:
     '''
         Si des nouveaux loder vont être ajoutés, 

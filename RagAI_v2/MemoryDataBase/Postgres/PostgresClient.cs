@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -16,6 +12,7 @@ namespace RagAI_v2.MemoryDataBase.Postgres;
 
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
+/// Une implémentation d’un client pour Postgres. Cette classe est utilisée pour gérer les opérations sur la base de données Postgres.
 /// </summary>
 internal sealed class PostgresClient : IDisposable, IAsyncDisposable
 {
@@ -24,10 +21,10 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     private readonly ILogger _log;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresClient"/> class.
+    /// Initialise une nouvelle instance de la classe <see cref="PostgresClient"/>.
     /// </summary>
     /// <param name="config">Configuration</param>
-    /// <param name="loggerFactory">Application logger factory</param>
+    /// <param name="loggerFactory">Fabrique de logger de l'application</param>
     public PostgresClient(CustomPostgresConfig config, ILoggerFactory? loggerFactory = null)
     {
         config.Validate();
@@ -66,11 +63,11 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Check if a table exists.
+    /// Vérifier l'existence d'une table dans la base de données.
     /// </summary>
-    /// <param name="tableName">The name assigned to a table of entries</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>True if the table exists</returns>
+    /// <param name="tableName">Nom attribué à une table d’entrées</param>
+    /// <param name="cancellationToken">Jeton d’annulation pour la tâche asynchrone</param>
+    /// <returns>Vrai si la table exists</returns>
     public async Task<bool> DoesTableExistAsync(
         string tableName,
         CancellationToken cancellationToken = default)
@@ -125,10 +122,10 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Create a table.
+    /// Créer une table dans la base de données.
     /// </summary>
-    /// <param name="tableName">The name assigned to a table of entries</param>
-    /// <param name="vectorSize">Embedding vectors dimension</param>
+    /// <param name="tableName">Nom attribué à une table d’entrées</param>
+    /// <param name="vectorSize">Dimension de vecteur d'embedding</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     public async Task CreateTableAsync(
         string tableName,
@@ -242,10 +239,10 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Get all tables
+    /// Obtenir toutes les tables
     /// </summary>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>A group of tables</returns>
+    /// <returns>Lists de tables</returns>
     public async IAsyncEnumerable<string> GetTablesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -285,9 +282,9 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Delete a table.
+    /// Supprimer une table.
     /// </summary>
-    /// <param name="tableName">Name of the table to delete</param>
+    /// <param name="tableName">Nom d'une table à supprimer</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     public async Task DeleteTableAsync(
         string tableName,
@@ -323,10 +320,10 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Upsert entry into a table.
+    /// Insérer ou mettre à jour une entrée dans une table.
     /// </summary>
-    /// <param name="tableName">The name assigned to a table of entries</param>
-    /// <param name="record">Record to create/update</param>
+    /// <param name="tableName">Nom attribué d'une table d'entrée</param>
+    /// <param name="record">enregistrement à insérer/mis à jour</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     public async Task UpsertAsync(
         string tableName,
@@ -389,17 +386,17 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Get a list of records
+    /// Obtenir une liste d'enregistrements en comparant la similarité vectorielle avec un vecteur cible.
     /// </summary>
-    /// <param name="tableName">Table containing the records to fetch</param>
-    /// <param name="target">Source vector to compare for similarity</param>
-    /// <param name="minSimilarity">Minimum similarity threshold</param>
-    /// <param name="filterSql">SQL filter to apply</param>
-    /// <param name="sqlUserValues">List of user values passed with placeholders to avoid SQL injection</param>
-    /// <param name="limit">Max number of records to retrieve</param>
-    /// <param name="offset">Records to skip from the top</param>
-    /// <param name="withEmbeddings">Whether to include embedding vectors</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <param name="tableName">Table contenant les enregistrements à récupérer</param>
+    /// <param name="target">Vecteur source à comparer pour la similarité</param>
+    /// <param name="minSimilarity">Seuil minimal de similarité</param>
+    /// <param name="filterSql">Filtre SQL à appliquer</param>
+    /// <param name="sqlUserValues">Liste de valeurs utilisateur passées avec des espaces réservés pour éviter l'injection SQL</param>
+    /// <param name="limit">Nombre maximal d'enregistrements à récupérer</param>
+    /// <param name="offset">Nombre d'enregistrements à ignorer depuis le début</param>
+    /// <param name="withEmbeddings">Indique s'il faut inclure les vecteurs d'embedding</param>
+    /// <param name="cancellationToken">Jeton d'annulation pour la tâche asynchrone</param>
     public async IAsyncEnumerable<(PostgresMemoryRecord record, double similarity)> GetSimilarAsync(
         string tableName,
         Vector target,
@@ -673,15 +670,15 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Get a list of records
+    /// Obtenir une liste d'enregistrements à partir d'une table.
     /// </summary>
-    /// <param name="tableName">Table containing the records to fetch</param>
-    /// <param name="filterSql">SQL filter to apply</param>
-    /// <param name="sqlUserValues">List of user values passed with placeholders to avoid SQL injection</param>
-    /// <param name="orderBySql">SQL to order the records</param>
-    /// <param name="limit">Max number of records to retrieve</param>
-    /// <param name="offset">Records to skip from the top</param>
-    /// <param name="withEmbeddings">Whether to include embedding vectors</param>
+    /// <param name="tableName">Table contenant enregistrement à récupérer</param>
+    /// <param name="filterSql">SQL filtre à appliquer</param>
+    /// <param name="sqlUserValues">Liste de valeurs utilisateur passées avec des espaces réservés pour éviter l'injection SQL</param>
+    /// <param name="orderBySql">SQL ordonnant enregistrements</param>
+    /// <param name="limit">Nombre maximal d'enregistrement à récupérer</param>
+    /// <param name="offset">Nombre d'enregistrement à ignorer depuis le début</param>
+    /// <param name="withEmbeddings">S'il faut inclure vecteur d'embedding</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     public async IAsyncEnumerable<PostgresMemoryRecord> GetListAsync(
         string tableName,
@@ -783,10 +780,10 @@ internal sealed class PostgresClient : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Delete an entry
+    /// Supprimer un enregistrement d'une table.
     /// </summary>
-    /// <param name="tableName">The name assigned to a table of entries</param>
-    /// <param name="id">The key of the entry to delete</param>
+    /// <param name="tableName">Nom attribué d'une table d'entrée</param>
+    /// <param name="id">Clé d'enregistrement à supprimer</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     public async Task DeleteAsync(
         string tableName,

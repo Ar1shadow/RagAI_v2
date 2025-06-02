@@ -12,7 +12,12 @@ namespace RagAI_v2.Extensions
     /// </summary>
     public static class JsonConfigurationExtensions
     {
-
+        /// <summary>
+        /// Configure les paramètres interactifs à partir d'un fichier JSON appsetting.json.
+        /// </summary>
+        /// <param name="builder">Le constructeur de type IConfiguration</param>
+        /// <param name="setteingPath">le chemin du fichier json</param>
+        /// <returns>Le constructeur de Configuration</returns>
 
         public static IConfigurationBuilder ConfigureInteractiveSettings(this IConfigurationBuilder builder, string setteingPath)
         {
@@ -38,6 +43,9 @@ namespace RagAI_v2.Extensions
                 //Configurer le chemin de stockage de l'historique
                 string? historyPath = ConsoleIO.Ask("Entrez le chemin pour le stockage de l'historique pendant votre conversation[Espace pour utiliser le défaut] ").Trim();
                 historyPath = string.IsNullOrWhiteSpace(historyPath) ? historyPath = AppPaths.HistoryDir : historyPath.Trim();
+                if (!Directory.Exists(AppPaths.HistoryDir)) 
+                    Directory.CreateDirectory(AppPaths.HistoryDir);
+                
                 while (!Path.Exists(historyPath))
                 {
                     ConsoleIO.Error($"Le chemin {historyPath} n'existe pas. Veuillez entrer un chemin valide.");
@@ -46,6 +54,7 @@ namespace RagAI_v2.Extensions
                 }
                 jsonObject["ChatHistory"] ??= new JsonObject();
                 jsonObject["ChatHistory"]!["Directory"] = historyPath;
+
 
                 //Configurer le chemin de stockage des fichiers
                 string? localFileStorage = ConsoleIO.Ask("Entrez le chemin vers le dossier contenant les fichiers à importer dans la base de données: ").Trim();
@@ -96,7 +105,7 @@ namespace RagAI_v2.Extensions
         /// <summary>
         /// Méthode d'extension : met automatiquement à jour "ChatModel.modelId" dans appsettings.json
         /// </summary>
-        /// <param name="builder"> Configuration builder</param>
+        /// <param name="builder">Constructeur de Configuration</param>
         /// <param name="appSettings"> Nom du fichier appsettings.json</param>
         public static IConfigurationBuilder UpdateChatModelConfig(this IConfigurationBuilder builder, string appSettings)
         {

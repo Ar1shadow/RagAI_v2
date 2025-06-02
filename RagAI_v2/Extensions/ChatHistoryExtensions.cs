@@ -5,11 +5,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace RagAI_v2.Extensions;
 
-//TODO: Mettre limite de taille de l'historique, supprimer les plus anciennes historiques si la dépasser, 
+
 public static class ChatHistoryExtensions
 {
-    //TODO: Ajouter une option de customisation du nom de sauvegarde <Complete> 
     //TODO: Ajouter une option pour generer un nom de fichier automatique par LLM
+
     public static void SaveHistory(this ChatHistory history, string savePath)
     {
         // Assurer l'historique non null
@@ -32,28 +32,28 @@ public static class ChatHistoryExtensions
             }
             var timestamp = DateTime.Now.ToString("dd-MM-yy-HHmm");
             var defaultFileName = $"ChatHistory-{timestamp}.json";
+
             var customFileName = ConsoleIO.Confirm($"Voulez-vous utiliser un nom de fichier personnalisé [Défaut : {defaultFileName}, Espace pour utiliser le défaut] :?");
             var fileName = customFileName? GetFileName(savePath) : defaultFileName;
             
             savePath = Path.Combine(savePath, fileName);
             var cleanedHistory = history.CleanHistory();
-            // Serialize the ChatHistory to a text-based format.
-            // Assuming ChatHistory has a meaningful .ToString() implementation or a method to serialize.
+            // Sérializer le ChatHistory dans un format json.
+            // En supposant que ChatHistory est sérialisable ou a une méthode ToString() appropriée.
             var historyJson = JsonSerializer.Serialize(history,new JsonSerializerOptions {WriteIndented = true} );
             File.WriteAllText(savePath, historyJson);
             ConsoleIO.WriteSystem($"Sauvegarde de l'historique de conversation réussie dans {fileName}");
         }
         catch (Exception ex)
         {
-            // Log any errors that occur during the save process.
-            // Replace with appropriate logging mechanism if available.
+            // Remplacer par un mécanisme de journalisation approprié si disponible.
             throw new IOException($"Failed to save chat history: {ex.Message}", ex);
         }
         
     }
 
-    //TODO: Ajouter une option pour ne pas charger l'historique <complet>
-    //TODO: Ajouter une fonction de sortir le resume de l'ancienne conversation
+
+    //TODO: Ajouter une fonction de afficher le resume de l'ancienne conversation lors du premier fois de chargement de l'historique
     public static void LoadHistory(this ChatHistory history, string historyDirectory)
     {
         const string option = "Annuler";
@@ -131,7 +131,7 @@ public static class ChatHistoryExtensions
         
     }
     /// <summary>
-    /// Supprimer les contents vide dans l'historique
+    /// Supprimer les contents vide dans une historique
     /// </summary>
     /// <param name="history"></param>
     /// <returns>ChatHistory</returns>

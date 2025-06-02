@@ -2,6 +2,9 @@ using RagAI_v2.Interface;
 using Spectre.Console;
 namespace RagAI_v2;
 
+/// <summary>
+/// Une classe utilitaire pour écrire des messages dans la console à l'aide de Spectre.
+/// </summary>
 public static class ConsoleIO
 {
 

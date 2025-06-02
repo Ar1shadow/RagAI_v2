@@ -3,8 +3,13 @@ using System.Net.Http.Json;
 
 namespace RagAI_v2.Extensions;
 
+
+/// <summary>
+/// Service pour interagir avec un serveur Python qui fournit des fonctionnalités de découpage de texte.
+/// </summary>
 public class PythonChunkService() : IDisposable
 {
+
     private Process? _process;
     private readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(100) };
     private bool _isStarted = false;
@@ -12,8 +17,14 @@ public class PythonChunkService() : IDisposable
     
 
     public bool IsStarted => _isStarted && _process is { HasExited:false};
-    
-    
+
+    /// <summary>
+    /// Démarre le service Python en exécutant le script spécifié.
+    /// </summary>
+    /// <param name="pythonScriptPath"></param>
+    /// <returns></returns>
+    /// <exception cref="TimeoutException"></exception>
+    /// <exception cref="Exception"></exception>
     public async Task StartAsync(string pythonScriptPath)
     {
         if (IsStarted) return;
@@ -45,6 +56,9 @@ public class PythonChunkService() : IDisposable
         _process.Start();
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
+
+
+        // Affichier les logs du processus Python
 
         // var output = _process.StandardOutput.ReadToEndAsync();
         // var error = _process.StandardError.ReadToEndAsync();
@@ -95,6 +109,8 @@ public class PythonChunkService() : IDisposable
         }
         throw new Exception("Python Service Failed！");
     }
+
+
     /// <summary>
     /// Appeler Python Api à analyser le fichier
     /// </summary>
@@ -141,6 +157,8 @@ public class PythonChunkService() : IDisposable
 
     }
 
+
+    /// </inheritdoc>
     public void Dispose()
     {
         if (!_isStarted) return;

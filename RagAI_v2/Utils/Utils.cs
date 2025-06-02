@@ -1,13 +1,16 @@
 using System.Security.Cryptography;
-using Microsoft.KernelMemory.Pipeline;
 using System.Diagnostics;
 
 namespace RagAI_v2.Utils;
 
+
+/// <summary>
+/// Classe utilitaire pour les opérations diverses dans l'application.
+/// </summary>
 public static class Outils
 {
     /// <summary>
-    /// Check if the input is a command
+    /// Vérifie si une chaîne de caractères est une commande.
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
@@ -79,7 +82,7 @@ public static class Outils
 
     #region Outils pour python
     /// <summary>
-    /// 
+    /// Packages Python nécessaires pour l'application.
     /// </summary>
     public static readonly List<string> PythonPackages = new ()
     {

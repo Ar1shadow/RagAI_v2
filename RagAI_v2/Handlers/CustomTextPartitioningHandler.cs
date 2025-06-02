@@ -37,6 +37,10 @@ public class CustomTextPartitioningHandler : IPipelineStepHandler
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="options">The customize text partitioning option</param>
     /// <param name="loggerFactory">Application logger factory</param>
+    /// <remark>
+    /// Ce handler n'est pas utilisé pour l'instant, la fonctionnaliré de découpage a été intégrée dans<see cref="CustomTextParsingHandler">.
+    /// </remark>
+
     public CustomTextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,

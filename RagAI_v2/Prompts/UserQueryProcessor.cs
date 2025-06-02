@@ -6,9 +6,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace RagAI_v2.Prompts;
-
+/// <summary>
+/// Processus de reformulation des requêtes utilisateur pour l'IA.
+/// </summary>
 internal static class UserQueryProcessor
 {
+
+
     public static async Task<string> ReformulerUserInput(
         string userInput,
         Kernel kernel,
@@ -28,6 +32,12 @@ internal static class UserQueryProcessor
         string decodedAnswer = WebUtility.HtmlDecode(answer);
         return decodedAnswer;
     }
+
+    /// <summary>
+    /// Découpe le texte de raisonnement potentiel et de réponse en deux parties.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     private static (string Think, string Answer) SplitReasoning(string text)
     {
         if (string.IsNullOrWhiteSpace(text))

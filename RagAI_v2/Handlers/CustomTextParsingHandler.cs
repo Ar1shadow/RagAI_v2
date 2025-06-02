@@ -1,6 +1,4 @@
-
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.WebPages;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
@@ -13,8 +11,8 @@ namespace RagAI_v2.Handlers;
 
 
 /// <summary>
-/// Memory ingestion pipeline handler responsible for extracting text and partitioning from files and saving it to document storage.
-/// Inner logic will call a python script to do the task.
+/// Handler responsable de l'extraction de texte et de la partition des fichiers, puis de les enregistrer dans le stockage de documents.
+/// La logique interne appellera un script python pour effectuer la tâche.
 /// </summary>
 public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
 {
@@ -27,13 +25,13 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
     public string StepName { get; }
 
     /// <summary>
-    /// Handler responsible for extracting text from documents.
-    /// Note: stepName and other params are injected with DI.
+    /// Handler responsable de l'extraction de texte à partir de documents.
+    /// Remarque : stepName et d'autres paramètres sont injectés via l'injection de dépendances (DI).
     /// </summary>
-    /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
-    /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="config">To read the pipeline information in the dcument storage</param>
-    /// <param name="loggerFactory">Application logger factory</param>
+    /// <param name="stepName">Étape du pipeline pour laquelle le handler sera invoqué</param>
+    /// <param name="orchestrator">Orchestrateur courant utilisé par le pipeline, donnant accès au contenu et à d'autres aides.</param>
+    /// <param name="config">Permet de lire les informations du pipeline dans le stockage de documents</param>
+    /// <param name="loggerFactory">Fabrique de loggers de l'application</param>
     public CustomTextParsingHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
@@ -127,8 +125,8 @@ public class CustomTextParsingHandler : IPipelineStepHandler, IDisposable
     }
     
     
-    
-    
+
+    /// </inheritdoc>
     public void Dispose()
     {
         if (this._webScraper is not IDisposable x) { return; }

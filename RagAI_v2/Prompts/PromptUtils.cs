@@ -1,10 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.KernelMemory;
 
 
 namespace RagAI_v2.Prompts;
+/// <summary>
+/// Classe utile pour le rendu de modèles de prompts avec contenants dynamiques.
+/// </summary>
 internal static class PromptUtils
 {
     private static readonly Regex s_tagsRegex = new(@"\{\{\$tags\[(.*?)\]\}\}");

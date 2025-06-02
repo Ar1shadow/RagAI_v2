@@ -1,24 +1,18 @@
-
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.KernelMemory.Text;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
-using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
 
 namespace RagAI_v2.Handlers.DataParsing.FormatsPdf;
 
+/// <summary>
+/// PDF decodeur qui analyse et extrait le texte des fichiers PDF en ignorant les en-têtes et pieds de page récurrents.
+/// </summary>
 public class CustomPdfDecoder : IContentDecoder
 {
     private readonly ILogger<CustomPdfDecoder> _log;

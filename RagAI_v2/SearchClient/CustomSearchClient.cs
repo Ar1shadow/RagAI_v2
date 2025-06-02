@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
@@ -21,6 +15,11 @@ using RagAI_v2.MemoryDataBase.Postgres;
 namespace RagAI_v2.SearchClient;
 #pragma warning disable KMEXP00
 #pragma warning disable KMEXP05
+
+
+/// <summary>
+/// Client de recherche personnalisé pour interagir avec la base de données mémoire.
+/// </summary>
 public sealed class CustomSearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;

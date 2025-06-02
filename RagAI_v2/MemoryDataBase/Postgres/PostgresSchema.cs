@@ -4,6 +4,10 @@ using Microsoft.KernelMemory.Postgres;
 
 namespace RagAI_v2.MemoryDataBase.Postgres;
 
+
+/// <summary>
+/// Méthodes utilitaires pour la validation des noms de schéma, de table et de champ dans Postgres.
+/// </summary>
 internal static class PostgresSchema
 {
     public const string PlaceholdersTags = "{{$tags}}";

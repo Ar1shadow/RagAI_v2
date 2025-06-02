@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
@@ -15,6 +11,10 @@ using Microsoft.KernelMemory.Prompts;
 namespace RagAI_v2.SearchClient;
 
 [Experimental("KMEXP05")]
+
+/// <summary>
+/// Générateur de réponses imbriqué dans SearchClient <see cref="CustomSearchClient"/>.
+/// Donner reponses aux questions de l'utilisateur en mode ASK.
 internal class AnswerGenerator
 {
     private readonly ILogger<AnswerGenerator> _log;

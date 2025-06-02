@@ -10,6 +10,7 @@ namespace RagAI_v2.MemoryDataBase.Postgres;
 
 /// <summary>
 /// Postgres record schema
+/// Schema du Postgres pour les enregistrements de mémoire.
 /// </summary>
 internal sealed class PostgresMemoryRecord
 {
@@ -23,32 +24,37 @@ internal sealed class PostgresMemoryRecord
     };
 
     /// <summary>
-    /// Record ID
+    /// ID enregistrement
     /// </summary>
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Content embedding vector
+    /// vecteur d'embedding
     /// </summary>
     public Vector Embedding { get; set; } = new Vector(new ReadOnlyMemory<float>());
 
     /// <summary>
     /// List of tags
+    /// liste des tags
     /// </summary>
     public List<string> Tags { get; set; } = [];
 
     /// <summary>
     /// Memory content
+    /// contenu de la mémoire
     /// </summary>
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
     /// Additional payload, not searchable
+    /// payload additionnel, non indexé
     /// </summary>
     public string Payload { get; set; } = string.Empty;
 
     /// <summary>
     /// Convert a Postgres record to a memory record instance
+    /// Convertit un enregistrement Postgres en une instance <see cref="MemoryRecord"/>
     /// </summary>
     /// <param name="pgMemoryRecord">Postgres record data</param>
     /// <returns>Memory record data</returns>
@@ -75,6 +81,7 @@ internal sealed class PostgresMemoryRecord
 
     /// <summary>
     /// Convert a memory record to a Postgres record instance
+    /// Convertit un enregistrement de mémoire <see cref="MemoryRecord"> en une instance PostgresMemoryRecord 
     /// </summary>
     /// <param name="record">Memory record</param>
     /// <returns>Postgres record data</returns>

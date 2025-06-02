@@ -3,25 +3,25 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace RagAI_v2.Extensions.ChatHistoryReducer;
 /// <summary>
-/// Reduce the chat history by summarizing message past the target message count.
+/// Réduire l'historique de chat en résumant les messages au-delà du nombre cible de messages.
 /// </summary>
 /// <remarks>
-/// Summarization will always avoid orphaning function-content as the presence of
-/// a function-call _must_ be followed by a function-result.  When a threshold count
-/// is provided (recommended), reduction will scan within the threshold window in an attempt to
-/// avoid orphaning a user message from an assistant response.
+/// Le résumé va tousjours éviter d'orpheliner le contenu de la fonction, 
+/// car la présence d'un appel de fonction _doit_ être suivie d'un résultat de fonction.
+/// Quand un seuil de compte est fourni (recommandé), la réduction va scanner dans la fenêtre de seuil
+/// afin d'éviter d'orpheliner un message utilisateur d'une réponse d'assistant.
 /// </remarks>
 
 #pragma warning disable SKEXP0001
 public class HistorySummarizationReducer : IChatHistoryReducer
 {
     /// <summary>
-    /// Metadata key to indicate a summary message.
+    /// clé metadonnée pour indiquer un message de résumé.
     /// </summary>
     public const string SummaryMetadataKey = "__summary__";
 
     /// <summary>
-    /// The default summarization system instructions.
+    /// l'intructions par défaut pour le système de résumé.
     /// </summary>
     public const string DefaultSummarizationPrompt =
         """
@@ -41,44 +41,44 @@ public class HistorySummarizationReducer : IChatHistoryReducer
         """;
 
     /// <summary>
-    /// System instructions for summarization.  Defaults to <see cref="DefaultSummarizationPrompt"/>.
+    /// l'instruction pour le système de résumé. Par defaults  <see cref="DefaultSummarizationPrompt"/>.
     /// </summary>
     public string SummarizationInstructions { get; init; } = DefaultSummarizationPrompt;
 
     /// <summary>
-    /// Flag to indicate if an exception should be thrown if summarization fails.
+    /// Drapeau pour indiquer si une exception doit être levée lors d'échoue de résumé.
     /// </summary>
     public bool FailOnError { get; init; } = true;
 
     /// <summary>
-    /// Flag to indicate summarization is maintained in a single message, or if a series of
-    /// summations are generated over time.
+    /// Drapeau pour indiquer si la réduction doit être effectuée en utilisant un seul message de résumé 
+    /// ou plusieurs messages de résumé au fil du temps.
     /// </summary>
     /// <remarks>
-    /// Not using a single summary may ultimately result in a chat history that exceeds the token limit.
+    /// Ne pas utiliser 'SingleSummary' peut finalement entraîner un historique de chat qui dépasse la limite de jetons.
     /// </remarks>
     public bool UseSingleSummary { get; init; }
-    
+
     /// <summary>
-    /// The maximum number of summaries in a chat history
+    /// le nombre maximum de messages dans l'historique de chat après réduction.
     /// </summary>
     /// <remarks>
-    /// Too many summaries may result in a chat history that exceeds the token limit.Can not set the parameter and flag
-    /// <see cref="UseSingleSummary"/> at the same time. Only one of the two parameters can be set.
+    /// Trop de résumés peuvent entraîner un historique de chat qui dépasse la limite de jetons.
+    /// <see cref="UseSingleSummary"/> et <see cref="MaxSummaryCount"/> ne peuvent pas être définis en même temps.
     /// </remarks>
     public int MaxSummaryCount { get; init; }
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HistorySummarizationReducer"/> class.
+    /// Initialization d'une nouvelle instance de la classe <see cref="HistorySummarizationReducer"/>.
     /// </summary>
-    /// <param name="service">A <see cref="Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService"/> instance to be used for summarization.</param>
-    /// <param name="targetCount">The desired number of target messages after reduction.</param>
-    /// <param name="thresholdCount">An optional number of messages beyond the 'targetCount' that must be present in order to trigger reduction/</param>
-    /// <param name="summaryCount">An optional number indicates the max number of summaries in a chat history</param>
+    /// <param name="service">A <see cref="IChatCompletionService"/> Instance pour résumer</param>
+    /// <param name="targetCount">Le nombre souhaité de meassages cibles après réduction</param>
+    /// <param name="thresholdCount">Un nombre optionnel de messages au-delà du 'targetCount' qui 
+    /// doivent être présents pour déclencher la réduction.</param>
+    /// <param name="summaryCount">Un nombre optionnel de résumés à conserver dans l'historique de chat après réduction.</param>
     /// <remarks>
-    /// While the 'thresholdCount' is optional, it is recommended to provided so that reduction is not triggered
-    /// for every incremental addition to the chat history beyond the 'targetCount'.
+    /// Bien que 'summaryCount' soit optionnel, il est recommandé de le fournir pour éviter que la réduction ne soit déclenchée
     /// </remarks>>
     public HistorySummarizationReducer(IChatCompletionService service, int targetCount, int? thresholdCount = null, int? summaryCount = null)
     {
@@ -108,10 +108,10 @@ public class HistorySummarizationReducer : IChatHistoryReducer
         
         var systemMessage = chatHistory.FirstOrDefault(l => l.Role == AuthorRole.System);
 
-        // Identify where summary messages end and regular history begins
+        //Identifier le point d'insertion pour les messages de résumé
         int insertionPoint = chatHistory.LocateSummarizationBoundary(SummaryMetadataKey, MaxSummaryCount);
 
-        // First pass to determine the truncation index
+        //déterminer l'index de troncature
         int truncationIndex = chatHistory.LocateSafeReductionIndex(
             this._targetCount,
             this._thresholdCount,
@@ -123,7 +123,7 @@ public class HistorySummarizationReducer : IChatHistoryReducer
 
         if (truncationIndex >= 0)
         {
-            // Second pass to extract history for summarization
+            // Extaire l'historique de chat à résumer
             IEnumerable<ChatMessageContent> summarizedHistory =
                 chatHistory.Extract(
                     this.UseSingleSummary ? 0 : insertionPoint,
@@ -140,13 +140,13 @@ public class HistorySummarizationReducer : IChatHistoryReducer
 
             try
             {
-                // Summarize
-                // Its better to use Role as User instead if System
+                // Summarization
+                // Il vaut mieux de utiliser 'AuthorRole' comme 'User' au lieu de 'System'
                 ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.User, this.SummarizationInstructions)];
                 ChatMessageContent summaryMessage = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
                 summaryMessage.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
-                // Assembly the summarized history
+                // Assemblage de l'historique résumé
                 truncatedHistory = AssemblySummarizedHistory(summaryMessage, systemMessage);
             }
             catch
@@ -160,7 +160,9 @@ public class HistorySummarizationReducer : IChatHistoryReducer
 
         return truncatedHistory;
 
-        // Inner function to assemble the summarized history
+        /// <summary>
+        /// fonction imbriquée pour assembler l'historique résumé.
+        /// </summary>
         IEnumerable<ChatMessageContent> AssemblySummarizedHistory(ChatMessageContent? summaryMessage, ChatMessageContent? systemMessages)
         {
             if (systemMessages is not null)

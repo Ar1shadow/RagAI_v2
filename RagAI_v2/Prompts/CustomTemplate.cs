@@ -1,7 +1,13 @@
 namespace RagAI_v2.Prompts;
 
+/// <summary>
+/// Template de prompt personnalisé pour les comportements de LLM.
+/// </summary>
 public static class CustomTemplate
 {
+    /// <summary>
+    /// Template de prompt pour les comportements de RAG.
+    /// </summary>
     internal static class Rag
     {
         public const string FactTemplate =
@@ -17,6 +23,9 @@ public static class CustomTemplate
                 Output:                             
             """;
 
+        /// <summary>
+        /// Prompt pour affiner les requêtes de recherche vectorielle à partir d'une question.
+        /// </summary>
         public const string QueryRefinementPrompt =
             """
             Ta tâche est d'extraire les mots ou expressions clés utiles à une recherche vectorielle à partir de la question fournie.
@@ -52,8 +61,10 @@ public static class CustomTemplate
             Question : {{$question}}
             Requête :
             """;
-        
-        
+
+        /// <summary>
+        /// Prompt pour répondre à une question en utilisant les résultats de recherche fournis.
+        /// </summary>
         public const string Prompt =
             """
             Tu dois répondre à la question ci-dessous uniquement en utilisant les résultats de recherche fournis.
@@ -66,17 +77,12 @@ public static class CustomTemplate
             - Aucune introduction ni conclusion.
             """;
 
-        public const string SimplePrompt =
-            """
-            [Règle]
-            Tu dois répondre à la question ci-dessous uniquement à partir des documents fournis.
-            Ces consignes s’appliquent uniquement à cette question.
-            Réponds en français, précisément, sans inventer, sans intro ni conclusion, uniquement selon les faits donnés.
-            [Fin de Règle]
-            """;
            
     }
 
+    /// <summary>
+    /// Template de prompt pour les interactions de chat.
+    /// </summary>
     internal static class Chat
     {
         public const string Prompt ="Répodez tousjours en français, sauf que le user demande";
